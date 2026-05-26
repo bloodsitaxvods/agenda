@@ -1,0 +1,1208 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#FDF8FA">
+<title>Agenda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FDF8FA;
+  --bg-2: #FBEFF3;
+  --card: #FFFFFF;
+  --card-2: #FFF5F8;
+  --pink: #E8729B;
+  --pink-soft: #FFB6C9;
+  --pink-pastel: #FFE4EC;
+  --pink-deep: #C75A82;
+  --pink-glow: rgba(255, 182, 201, 0.45);
+  --text: #4A2C3A;
+  --text-mute: #9C7B8A;
+  --border: #F5DDE3;
+  --border-soft: #FCEEF2;
+  --done: #C5AEB7;
+  --heart: #FF8FA8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Quicksand', system-ui, sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at top right, rgba(255, 182, 201, 0.18), transparent 55%),
+    radial-gradient(ellipse at bottom left, rgba(255, 228, 236, 0.4), transparent 55%),
+    var(--bg);
+}
+
+.sakura-bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden; }
+.petal { position: absolute; width: 14px; height: 18px; opacity: 0; animation: fall linear infinite; }
+
+@keyframes fall {
+  0% { transform: translate(0, -10vh) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.55; }
+  90% { opacity: 0.45; }
+  100% { transform: translate(40px, 110vh) rotate(720deg); opacity: 0; }
+}
+
+.gate {
+  position: fixed; inset: 0; z-index: 5000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  background: var(--bg);
+}
+
+.gate-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 22px;
+  padding: 36px 30px; max-width: 420px; width: 100%; text-align: center;
+  box-shadow: 0 12px 40px rgba(232, 114, 155, 0.18);
+}
+
+.gate-logo {
+  width: 60px; height: 60px; margin: 0 auto 18px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--pink-pastel); border-radius: 50%;
+}
+
+.gate-logo svg { width: 32px; height: 32px; color: var(--heart); filter: drop-shadow(0 2px 4px rgba(255, 143, 168, 0.4)); }
+
+.gate-title {
+  font-family: 'Fredoka', sans-serif; font-weight: 600; font-size: 24px;
+  color: var(--text); margin-bottom: 8px;
+}
+
+.gate-sub { font-size: 14px; color: var(--text-mute); margin-bottom: 26px; line-height: 1.5; }
+
+.google-btn {
+  display: inline-flex; align-items: center; gap: 12px;
+  background: #fff; border: 1px solid #E0E0E0; border-radius: 12px;
+  padding: 12px 22px; font-family: 'Quicksand'; font-size: 14px; font-weight: 600;
+  color: #3c4043; cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.google-btn:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.1); transform: translateY(-1px); }
+.google-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.google-btn svg { width: 20px; height: 20px; }
+
+.gate-error {
+  background: var(--pink-pastel); border: 1px solid var(--pink-soft);
+  border-radius: 12px; padding: 12px; margin-top: 16px;
+  font-size: 13px; color: var(--pink-deep);
+}
+
+.spinner {
+  width: 36px; height: 36px; border: 3px solid var(--pink-pastel);
+  border-top-color: var(--pink); border-radius: 50%;
+  animation: spin 0.9s linear infinite; margin: 0 auto;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.app { position: relative; z-index: 1; display: grid; grid-template-columns: 70px 1fr; min-height: 100vh; }
+
+.sidebar {
+  background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-right: 1px solid var(--border);
+  display: flex; flex-direction: column; align-items: center;
+  padding: 20px 0; gap: 10px; position: sticky; top: 0; height: 100vh;
+}
+
+.sidebar-logo { width: 40px; height: 40px; margin-bottom: 14px; display: flex; align-items: center; justify-content: center; }
+.sidebar-logo svg { width: 28px; height: 28px; color: var(--heart); filter: drop-shadow(0 2px 4px rgba(255, 143, 168, 0.4)); }
+
+.tab-btn {
+  width: 46px; height: 46px; border-radius: 14px;
+  border: 1px solid transparent; background: transparent; color: var(--text-mute);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; position: relative;
+}
+
+.tab-btn:hover { background: var(--pink-pastel); color: var(--pink-deep); }
+.tab-btn.active { background: var(--pink-pastel); color: var(--pink-deep); border-color: var(--border); box-shadow: 0 2px 8px rgba(232, 114, 155, 0.15); }
+.tab-btn svg { width: 22px; height: 22px; }
+
+.tab-btn .badge {
+  position: absolute; top: 2px; right: 2px;
+  background: var(--pink); color: #fff;
+  font-size: 9px; font-weight: 700; min-width: 16px; height: 16px;
+  border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  padding: 0 4px; box-shadow: 0 2px 4px rgba(232, 114, 155, 0.3);
+}
+
+.tab-spacer { flex: 1; }
+
+.main { padding: 22px 26px 26px; display: flex; flex-direction: column; gap: 18px; min-width: 0; }
+
+.header { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+.date-display {
+  display: flex; align-items: center; gap: 18px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 22px;
+  padding: 14px 26px; box-shadow: 0 4px 18px rgba(232, 114, 155, 0.08);
+}
+
+.date-num { font-family: 'Fredoka'; font-weight: 600; font-size: 52px; color: var(--text); line-height: 1; min-width: 70px; text-align: center; letter-spacing: -1px; }
+.date-info { display: flex; flex-direction: column; gap: 2px; }
+.date-weekday { font-weight: 700; font-size: 16px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text); }
+.date-month { font-size: 12px; color: var(--text-mute); text-transform: uppercase; letter-spacing: 1.5px; }
+.date-time { margin-left: 6px; padding-left: 18px; border-left: 1px solid var(--border); font-family: 'Fredoka'; font-weight: 500; font-size: 24px; color: var(--pink); }
+
+.header-actions { display: flex; align-items: center; gap: 12px; }
+
+.user-pill {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 999px;
+  padding: 8px 14px 8px 8px; cursor: pointer; transition: all 0.2s;
+  font-family: 'Quicksand'; box-shadow: 0 2px 8px rgba(232, 114, 155, 0.06);
+}
+
+.user-pill:hover { border-color: var(--pink-soft); background: var(--card-2); }
+
+.user-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--pink-soft), var(--pink));
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 12px; color: #fff; overflow: hidden;
+}
+
+.user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.user-name { font-size: 13px; font-weight: 600; color: var(--text); }
+
+.week-nav { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+.week-nav-btn {
+  width: 36px; height: 36px; border-radius: 12px;
+  background: var(--card); border: 1px solid var(--border); color: var(--text-mute);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; box-shadow: 0 2px 6px rgba(232, 114, 155, 0.06);
+}
+
+.week-nav-btn:hover { border-color: var(--pink-soft); color: var(--pink-deep); background: var(--pink-pastel); }
+.week-label { font-size: 14px; font-weight: 600; color: var(--text-mute); padding: 0 12px; min-width: 220px; text-align: center; }
+
+.today-pill {
+  background: var(--pink); color: #fff; border: none;
+  border-radius: 12px; padding: 8px 16px; font-size: 12px; font-weight: 700;
+  cursor: pointer; text-transform: uppercase; letter-spacing: 1.5px;
+  box-shadow: 0 4px 12px rgba(232, 114, 155, 0.3); font-family: 'Quicksand';
+  transition: transform 0.15s;
+}
+
+.today-pill:hover { transform: scale(1.04); }
+
+.week-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)) 240px; grid-template-rows: 1fr 1fr; gap: 14px; flex: 1; min-height: 480px; }
+
+.day-card {
+  background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+  padding: 0; display: flex; flex-direction: column;
+  min-height: 230px; position: relative; transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(232, 114, 155, 0.07); overflow: hidden;
+}
+
+.day-card.today { border-color: var(--pink); box-shadow: 0 6px 22px rgba(232, 114, 155, 0.25); animation: pulse-glow 3s ease-in-out infinite; }
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 6px 18px rgba(232, 114, 155, 0.2); }
+  50% { box-shadow: 0 8px 28px rgba(232, 114, 155, 0.4); }
+}
+
+.day-card .day-header {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--pink-pastel); padding: 8px 14px; border-radius: 18px 18px 0 0;
+}
+
+.day-name { font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px; color: var(--text); }
+.day-card.today .day-name { color: var(--pink-deep); }
+.day-card.today .day-header { background: linear-gradient(180deg, var(--pink-soft), var(--pink-pastel)); }
+.day-num { font-family: 'Fredoka'; font-weight: 600; font-size: 14px; color: var(--text); }
+.day-card.today .day-num { color: var(--pink-deep); }
+
+.day-card-body { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 14px; min-height: 0; }
+
+.day-1 { grid-column: 1; grid-row: 1; }
+.day-2 { grid-column: 2; grid-row: 1; }
+.day-3 { grid-column: 3; grid-row: 1; }
+.day-4 { grid-column: 4; grid-row: 1; }
+.day-5 { grid-column: 1; grid-row: 2; }
+.day-6 { grid-column: 2; grid-row: 2; }
+.day-7 { grid-column: 3; grid-row: 2; }
+
+.notes-list { flex: 1; display: flex; flex-direction: column; gap: 7px; overflow-y: auto; overflow-x: hidden; scrollbar-width: thin; scrollbar-color: var(--pink-soft) transparent; min-height: 0; padding-right: 2px; }
+
+.note-item {
+  background: var(--pink-pastel); border: 1px solid var(--border-soft); border-radius: 10px;
+  padding: 8px 10px; display: flex; align-items: flex-start; gap: 7px;
+  font-size: 12px; cursor: pointer; transition: background 0.2s, border-color 0.2s; position: relative;
+}
+
+.note-item:hover { background: #FFDAE5; border-color: var(--pink-soft); }
+
+.note-check {
+  appearance: none; width: 14px; height: 14px; min-width: 14px;
+  border: 1.5px solid var(--pink); border-radius: 4px;
+  cursor: pointer; flex-shrink: 0; margin-top: 2px; position: relative; background: #fff;
+}
+
+.note-check:checked { background: var(--pink); }
+.note-check:checked::after { content: ''; position: absolute; left: 3px; top: 0; width: 4px; height: 8px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+
+.note-content { flex: 1; min-width: 0; overflow-wrap: anywhere; word-break: normal; hyphens: auto; -webkit-hyphens: auto; }
+.note-text { line-height: 1.5; font-size: 12.5px; }
+.note-item.done .note-text { color: var(--done); text-decoration: line-through; }
+.note-meta { font-size: 9px; color: var(--text-mute); margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.note-author { color: var(--pink-deep); font-weight: 700; }
+
+.note-thumb { width: 100%; max-height: 80px; object-fit: cover; border-radius: 6px; margin-top: 4px; cursor: pointer; border: 1px solid var(--border-soft); }
+
+.del-btn {
+  background: transparent; border: none; color: var(--text-mute);
+  cursor: pointer; font-size: 14px; line-height: 1; padding: 0; margin-top: 1px;
+  width: 14px; height: 14px; display: flex; align-items: center; justify-content: center;
+  align-self: flex-start; flex-shrink: 0; opacity: 0.5; transition: opacity 0.15s, color 0.15s;
+}
+
+.del-btn:hover { color: var(--pink); opacity: 1; }
+
+.add-note-btn {
+  background: transparent; border: 1px dashed var(--pink-soft); border-radius: 10px;
+  color: var(--text-mute); padding: 6px; font-size: 11px;
+  cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
+  font-family: 'Quicksand'; font-weight: 600;
+}
+
+.add-note-btn:hover { border-color: var(--pink); color: var(--pink-deep); background: var(--pink-pastel); }
+
+.day-heart { position: absolute; bottom: 8px; right: 12px; font-size: 14px; color: var(--heart); opacity: 0.7; pointer-events: none; }
+
+.side-panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px; overflow: hidden; box-shadow: 0 4px 14px rgba(232, 114, 155, 0.07); }
+
+.panel-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px; }
+.panel-header > span:first-child { background: #2D1B25; color: #fff; font-family: 'Fredoka'; font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; padding: 5px 14px; border-radius: 999px; }
+
+.priorities-panel { grid-column: 5; grid-row: 1 / span 2; align-self: start; max-height: 100%; overflow: hidden; }
+.priorities-panel.empty .panel-list { flex: 0; min-height: 0; }
+.priorities-panel.empty .empty-state { padding: 8px 6px 4px; font-size: 11px; }
+
+.panel-list { flex: 1; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; min-height: 0; }
+
+.view { display: none; flex: 1; flex-direction: column; gap: 14px; min-height: 0; }
+.view.active { display: flex; }
+
+.chat-view { background: var(--card); border: 1px solid var(--border); border-radius: 18px; overflow: hidden; min-height: 70vh; box-shadow: 0 4px 14px rgba(232, 114, 155, 0.07); }
+
+.chat-messages { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+
+.msg { max-width: 75%; padding: 10px 14px; border-radius: 16px; font-size: 14px; line-height: 1.4; word-break: break-word; }
+.msg.me { background: #FFFFFF; color: var(--text); align-self: flex-end; border: 1px solid var(--border); border-bottom-right-radius: 4px; box-shadow: 0 2px 10px rgba(232, 114, 155, 0.12); }
+.msg.them { background: var(--pink-soft); color: #FFFFFF; align-self: flex-start; border-bottom-left-radius: 4px; box-shadow: 0 2px 10px rgba(255, 143, 168, 0.25); }
+.msg.them .msg-meta { color: #FFFFFF; opacity: 0.9; }
+.msg-meta { font-size: 10px; margin-top: 4px; opacity: 0.7; }
+
+.chat-input-bar { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--border); background: var(--bg-2); }
+
+.chat-input { flex: 1; background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 10px 16px; color: var(--text); font-family: 'Quicksand'; font-size: 14px; }
+.chat-input:focus { outline: none; border-color: var(--pink-soft); box-shadow: 0 0 0 3px var(--pink-pastel); }
+
+.chat-send { width: 42px; height: 42px; border-radius: 50%; background: var(--pink); border: none; color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(232, 114, 155, 0.3); flex-shrink: 0; }
+
+.empty-state { color: var(--text-mute); text-align: center; padding: 30px 20px; font-size: 13px; }
+
+.card-panel { background: var(--card); border: 1px solid var(--border); border-radius: 18px; padding: 22px; display: flex; flex-direction: column; gap: 16px; box-shadow: 0 4px 14px rgba(232, 114, 155, 0.07); }
+
+.calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+
+.cal-cell { aspect-ratio: 1; background: var(--pink-pastel); border: 1px solid var(--border-soft); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 600; color: var(--text); }
+.cal-cell:hover { background: var(--pink-soft); color: #fff; }
+.cal-cell.today { background: var(--pink); color: #fff; font-weight: 700; box-shadow: 0 4px 10px rgba(232, 114, 155, 0.3); }
+.cal-cell.muted { opacity: 0.35; background: var(--card-2); color: var(--text-mute); }
+.cal-cell.in-week { border-color: var(--pink); background: var(--pink-soft); color: #fff; }
+.cal-cell.in-week.today { background: var(--pink); }
+
+.cal-header-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-mute); text-align: center; font-weight: 700; padding-bottom: 4px; }
+.cal-nav { display: flex; align-items: center; gap: 12px; justify-content: center; }
+.cal-nav-label { font-family: 'Fredoka'; font-weight: 600; font-size: 16px; min-width: 220px; text-align: center; color: var(--text); }
+
+.field-label { font-size: 12px; color: var(--text-mute); margin-bottom: 6px; display: block; text-transform: uppercase; letter-spacing: 1px; font-weight: 700; }
+.field-input { width: 100%; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 10px 14px; color: var(--text); font-family: 'Quicksand'; font-size: 14px; }
+.field-input:focus { outline: none; border-color: var(--pink-soft); box-shadow: 0 0 0 3px var(--pink-pastel); }
+.field-input:disabled { background: var(--card-2); color: var(--text-mute); cursor: not-allowed; }
+
+.modal-backdrop { position: fixed; inset: 0; background: rgba(74, 44, 58, 0.4); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.modal { background: var(--card); border: 1px solid var(--border); border-radius: 22px; padding: 22px; max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(232, 114, 155, 0.25); }
+.modal h2 { font-family: 'Fredoka'; font-weight: 600; color: var(--text); font-size: 18px; letter-spacing: 0.5px; margin-bottom: 16px; }
+.modal textarea { width: 100%; background: var(--card-2); border: 1px solid var(--border); border-radius: 12px; padding: 12px; color: var(--text); font-family: 'Quicksand'; font-size: 14px; resize: vertical; min-height: 90px; }
+.modal textarea:focus, .modal input:focus { outline: none; border-color: var(--pink-soft); box-shadow: 0 0 0 3px var(--pink-pastel); }
+
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
+
+.btn { background: var(--card); border: 1px solid var(--border); color: var(--text); border-radius: 12px; padding: 8px 18px; font-family: 'Quicksand'; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn:hover { border-color: var(--pink-soft); background: var(--pink-pastel); }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-primary { background: var(--pink); border-color: var(--pink); color: #fff; box-shadow: 0 4px 12px rgba(232, 114, 155, 0.25); }
+.btn-primary:hover { background: var(--pink-deep); border-color: var(--pink-deep); color: #fff; }
+.btn-danger { color: var(--pink-deep); border-color: var(--pink-soft); background: var(--card); }
+.btn-danger:hover { background: var(--pink-pastel); }
+
+.upload-btn { display: inline-flex; align-items: center; gap: 6px; background: var(--pink-pastel); border: 1px dashed var(--pink-soft); border-radius: 10px; padding: 8px 14px; font-size: 12px; color: var(--pink-deep); cursor: pointer; margin-top: 12px; font-family: 'Quicksand'; font-weight: 600; }
+.upload-btn:hover { border-color: var(--pink); background: #FFDAE5; }
+
+input[type="file"] { display: none; }
+
+.image-preview { margin-top: 10px; max-width: 100%; max-height: 180px; border-radius: 10px; border: 1px solid var(--border); }
+
+.img-viewer { position: fixed; inset: 0; background: rgba(74, 44, 58, 0.85); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 30px; flex-direction: column; gap: 16px; }
+.img-viewer img { max-width: 100%; max-height: 80vh; border-radius: 12px; border: 1px solid var(--border); }
+.img-viewer-actions { display: flex; gap: 10px; }
+
+.toast { position: fixed; bottom: 100px; right: 20px; background: var(--card); border: 1px solid var(--pink-soft); color: var(--text); border-radius: 14px; padding: 12px 18px; font-size: 13px; font-weight: 600; box-shadow: 0 8px 24px rgba(232, 114, 155, 0.25); z-index: 3000; animation: slideIn 0.3s ease; }
+
+@keyframes slideIn { from { transform: translateX(120%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+.hidden { display: none !important; }
+
+.upload-progress { margin-top: 8px; font-size: 11px; color: var(--text-mute); display: flex; align-items: center; gap: 8px; }
+.upload-progress .mini-spinner { width: 12px; height: 12px; border: 2px solid var(--pink-pastel); border-top-color: var(--pink); border-radius: 50%; animation: spin 0.8s linear infinite; }
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--pink-soft); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--pink); }
+
+@media (max-width: 1024px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar {
+    position: fixed; bottom: 0; left: 0; right: 0; top: auto; height: auto; width: 100%;
+    flex-direction: row; padding: 10px 6px;
+    border-right: none; border-top: 1px solid var(--border);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 -4px 16px rgba(232, 114, 155, 0.08);
+    z-index: 100; justify-content: space-around; gap: 4px;
+  }
+  .sidebar-logo { display: none; }
+  .tab-spacer { display: none; }
+  .main { padding: 14px 12px 90px; }
+  .date-display { padding: 12px 16px; gap: 12px; width: 100%; }
+  .date-num { font-size: 42px; min-width: 50px; }
+  .date-weekday { font-size: 14px; letter-spacing: 1.5px; }
+  .date-month { font-size: 11px; }
+  .date-time { font-size: 18px; padding-left: 12px; }
+  .header-actions { width: 100%; justify-content: flex-end; }
+  .week-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 12px; }
+  .day-card, .priorities-panel { grid-column: 1 !important; grid-row: auto !important; min-height: 180px; }
+  .priorities-panel { align-self: stretch; }
+  .week-label { min-width: auto; font-size: 12px; padding: 0 6px; }
+}
+</style>
+</head>
+<body>
+
+<div class="sakura-bg" id="sakuraBg"></div>
+
+<div class="gate" id="loadingGate">
+  <div class="gate-card">
+    <div class="spinner"></div>
+    <p style="margin-top: 18px; color: var(--text-mute); font-size: 13px;">Cargando...</p>
+  </div>
+</div>
+
+<div class="gate hidden" id="loginGate">
+  <div class="gate-card">
+    <div class="gate-logo">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    </div>
+    <div class="gate-title">Agenda</div>
+    <div class="gate-sub">Solo para personas autorizadas. Inicia sesión con tu cuenta de Google.</div>
+    <button class="google-btn" id="signInBtn">
+      <svg viewBox="0 0 48 48"><path fill="#4285F4" d="M45.12 24.5c0-1.56-.14-3.06-.4-4.5H24v8.51h11.84c-.51 2.75-2.06 5.08-4.39 6.64v5.52h7.11c4.16-3.83 6.56-9.47 6.56-16.17z"/><path fill="#34A853" d="M24 46c5.94 0 10.92-1.97 14.56-5.33l-7.11-5.52c-1.97 1.32-4.49 2.1-7.45 2.1-5.73 0-10.58-3.87-12.31-9.07H4.34v5.7C7.96 41.07 15.4 46 24 46z"/><path fill="#FBBC05" d="M11.69 28.18C11.25 26.86 11 25.45 11 24s.25-2.86.69-4.18v-5.7H4.34C2.85 17.09 2 20.45 2 24c0 3.55.85 6.91 2.34 9.88l7.35-5.7z"/><path fill="#EA4335" d="M24 10.75c3.23 0 6.13 1.11 8.41 3.29l6.31-6.31C34.91 4.18 29.93 2 24 2 15.4 2 7.96 6.93 4.34 14.12l7.35 5.7c1.73-5.2 6.58-9.07 12.31-9.07z"/></svg>
+      Iniciar sesión con Google
+    </button>
+    <div class="gate-error hidden" id="loginError"></div>
+  </div>
+</div>
+
+<div class="gate hidden" id="deniedGate">
+  <div class="gate-card">
+    <div class="gate-logo" style="background: #FFE0E0;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#E85959" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 32px; height: 32px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+    </div>
+    <div class="gate-title">Acceso denegado</div>
+    <div class="gate-sub">Tu cuenta <span id="deniedEmail" style="color: var(--pink-deep); font-weight: 700;"></span> no está autorizada para entrar a esta agenda.</div>
+    <button class="btn btn-primary" id="signOutDenied">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="app hidden" id="appRoot">
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    </div>
+    <button class="tab-btn active" data-view="Week" title="Semana actual">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12L12 4l9 8"/><path d="M5 10v10h14V10"/></svg>
+    </button>
+    <button class="tab-btn" data-view="Calendar" title="Elegir fecha">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 10h18"/></svg>
+    </button>
+    <button class="tab-btn" data-view="Chat" title="Chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12c0 4-4 7-9 7-1.5 0-3-.3-4-.7L4 20l1-3.5C3.7 15.3 3 13.7 3 12c0-4 4-7 9-7s9 3 9 7z"/></svg>
+    </button>
+    <button class="tab-btn" data-view="Reminders" title="Recordatorios">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0112 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10 21a2 2 0 004 0"/></svg>
+      <span class="badge hidden" id="reminderBadge">0</span>
+    </button>
+    <div class="tab-spacer"></div>
+    <button class="tab-btn" data-view="Settings" title="Ajustes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 008.91 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 8.91a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    </button>
+  </aside>
+
+  <main class="main">
+
+    <header class="header">
+      <div class="date-display">
+        <div class="date-num" id="dateNum">--</div>
+        <div class="date-info">
+          <div class="date-weekday" id="dateWeekday">--</div>
+          <div class="date-month" id="dateMonth">--</div>
+        </div>
+        <div class="date-time" id="dateTime">--:--</div>
+      </div>
+      <div class="header-actions">
+        <button class="user-pill" id="userPill">
+          <div class="user-avatar" id="userAvatar">?</div>
+          <span class="user-name" id="userName">--</span>
+        </button>
+      </div>
+    </header>
+
+    <div class="view active" id="viewWeek">
+      <div class="week-nav">
+        <button class="week-nav-btn" id="prevWeek" title="Semana anterior">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="week-label" id="weekLabel">--</div>
+        <button class="week-nav-btn" id="nextWeek" title="Semana siguiente">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+        <button class="today-pill" id="todayBtn">Hoy</button>
+      </div>
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+
+    <div class="view" id="viewChat">
+      <div class="chat-view" style="display: flex; flex-direction: column; flex: 1;">
+        <div class="chat-messages" id="chatMessages"></div>
+        <div class="chat-input-bar">
+          <input type="text" class="chat-input" id="chatInput" placeholder="Escribe un mensaje...">
+          <button class="chat-send" id="chatSend" title="Enviar">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="view" id="viewCalendar">
+      <div class="card-panel">
+        <div class="panel-header"><span>Selecciona una fecha</span></div>
+        <div class="cal-nav">
+          <button class="week-nav-btn" id="prevMonth"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <div class="cal-nav-label" id="monthLabel">--</div>
+          <button class="week-nav-btn" id="nextMonth"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></button>
+        </div>
+        <div class="cal-header-row"><div>L</div><div>M</div><div>X</div><div>J</div><div>V</div><div>S</div><div>D</div></div>
+        <div class="calendar-grid" id="calGrid"></div>
+        <div style="font-size: 12px; color: var(--text-mute); text-align: center; margin-top: 6px;">Toca un día para ver su semana</div>
+      </div>
+    </div>
+
+    <div class="view" id="viewReminders">
+      <div class="card-panel">
+        <div class="panel-header"><span>Prioridades pendientes</span></div>
+        <div id="remindersList" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      </div>
+    </div>
+
+    <div class="view" id="viewSettings">
+      <div class="card-panel">
+        <div class="panel-header"><span>Mi cuenta</span></div>
+        <div>
+          <label class="field-label">Alias</label>
+          <input type="text" id="aliasDisplay" class="field-input" disabled>
+        </div>
+        <div>
+          <label class="field-label">Correo</label>
+          <input type="text" id="emailDisplay" class="field-input" disabled>
+        </div>
+        <div style="margin-top: 6px;">
+          <button class="btn btn-danger" id="signOutBtn">Cerrar sesión</button>
+        </div>
+        <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-mute); line-height: 1.5;">
+          Todos los apuntes se guardan en la nube y se sincronizan automáticamente entre los dispositivos autorizados. Las imágenes se almacenan en Firebase Storage.
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="modal-backdrop hidden" id="noteModal">
+  <div class="modal">
+    <h2 id="noteModalTitle">Nueva nota</h2>
+    <textarea id="noteText" placeholder="Escribe aquí..."></textarea>
+    <label class="upload-btn" for="noteImage">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
+      Adjuntar imagen
+    </label>
+    <input type="file" id="noteImage" accept="image/*">
+    <img id="imagePreview" class="image-preview hidden" alt="">
+    <div class="upload-progress hidden" id="uploadProgress"><div class="mini-spinner"></div><span>Subiendo imagen...</span></div>
+    <div id="reminderRow" class="hidden" style="margin-top: 14px;">
+      <label class="field-label">Recordatorio (opcional)</label>
+      <input type="datetime-local" id="reminderTime" class="field-input">
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="noteCancel">Cancelar</button>
+      <button class="btn btn-primary" id="noteSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="img-viewer hidden" id="imgViewer">
+  <img id="imgViewerImg" alt="">
+  <div class="img-viewer-actions">
+    <a class="btn" id="imgDownload" download="imagen.png" target="_blank">Descargar</a>
+    <button class="btn" id="imgClose">Cerrar</button>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
+  collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import { getStorage, ref as sRef, uploadBytes, getDownloadURL, deleteObject }
+  from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAEM9SFkXUPH5KUfOXFW9-x3otkMAjxXg8",
+  authDomain: "mi-agenda-85064.firebaseapp.com",
+  projectId: "mi-agenda-85064",
+  storageBucket: "mi-agenda-85064.firebasestorage.app",
+  messagingSenderId: "1022858874247",
+  appId: "1:1022858874247:web:550605a42861eaaf011722"
+};
+
+const ALIAS_MAP = {
+  'bloodsitaxvods@gmail.com': 'Supor',
+  'daphnecannibal@gmail.com': 'Bloody'
+};
+const ALLOWED_EMAILS = Object.keys(ALIAS_MAP);
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+});
+const storage = getStorage(app);
+
+const TZ = 'America/Mexico_City';
+const NOTIFIED_KEY = 'notified_reminders_v1';
+
+let currentUser = null;
+let currentAlias = null;
+let state = { notes: [], chat: [] };
+let currentWeekStart = null;
+let currentEditing = null;
+let calMonth = null;
+let notesUnsub = null;
+let chatUnsub = null;
+let notifiedIds = new Set(JSON.parse(localStorage.getItem(NOTIFIED_KEY) || '[]'));
+
+const WEEKDAYS_ES = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'];
+const MONTHS_ES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
+
+function $(id) { return document.getElementById(id); }
+function show(el) { el.classList.remove('hidden'); }
+function hide(el) { el.classList.add('hidden'); }
+
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; }, 2200);
+  setTimeout(() => t.remove(), 2700);
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+onAuthStateChanged(auth, (user) => {
+  hide($('loadingGate'));
+  if (!user) {
+    show($('loginGate'));
+    hide($('deniedGate'));
+    hide($('appRoot'));
+    if (notesUnsub) { notesUnsub(); notesUnsub = null; }
+    if (chatUnsub) { chatUnsub(); chatUnsub = null; }
+    return;
+  }
+  if (!ALLOWED_EMAILS.includes(user.email)) {
+    hide($('loginGate'));
+    show($('deniedGate'));
+    hide($('appRoot'));
+    $('deniedEmail').textContent = user.email;
+    return;
+  }
+  currentUser = user;
+  currentAlias = ALIAS_MAP[user.email];
+  hide($('loginGate'));
+  hide($('deniedGate'));
+  show($('appRoot'));
+  $('aliasDisplay').value = currentAlias;
+  $('emailDisplay').value = user.email;
+  $('userName').textContent = currentAlias;
+  if (user.photoURL) {
+    $('userAvatar').innerHTML = `<img src="${user.photoURL}" alt="">`;
+  } else {
+    $('userAvatar').textContent = currentAlias.charAt(0).toUpperCase();
+  }
+  startListeners();
+  goToToday();
+  updateHeader();
+  if ('Notification' in window && Notification.permission === 'default') {
+    setTimeout(() => { try { Notification.requestPermission(); } catch(e) {} }, 3000);
+  }
+});
+
+$('signInBtn').onclick = async () => {
+  hide($('loginError'));
+  $('signInBtn').disabled = true;
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    $('loginError').textContent = 'No se pudo iniciar sesión. ' + (e.message || '');
+    show($('loginError'));
+  } finally {
+    $('signInBtn').disabled = false;
+  }
+};
+
+$('signOutDenied').onclick = () => signOut(auth);
+$('signOutBtn').onclick = () => {
+  if (confirm('¿Cerrar sesión?')) signOut(auth);
+};
+
+function startListeners() {
+  notesUnsub = onSnapshot(collection(db, 'notes'), (snap) => {
+    state.notes = [];
+    snap.forEach(d => state.notes.push({ id: d.id, ...d.data() }));
+    const activeView = document.querySelector('.tab-btn.active')?.dataset.view;
+    if (activeView === 'Week') renderWeek();
+    if (activeView === 'Reminders') renderReminders();
+    updateReminderBadge();
+  }, (err) => { console.error('notes listener', err); showToast('Error de sincronización'); });
+
+  chatUnsub = onSnapshot(query(collection(db, 'chat'), orderBy('ts')), (snap) => {
+    state.chat = [];
+    snap.forEach(d => state.chat.push({ id: d.id, ...d.data() }));
+    const activeView = document.querySelector('.tab-btn.active')?.dataset.view;
+    if (activeView === 'Chat') renderChat();
+  }, (err) => { console.error('chat listener', err); });
+}
+
+function nowCDMX() {
+  const fmt = new Intl.DateTimeFormat('en-CA', {
+    timeZone: TZ,
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+  });
+  const parts = fmt.formatToParts(new Date()).reduce((a, p) => (a[p.type] = p.value, a), {});
+  return {
+    year: +parts.year, month: +parts.month, day: +parts.day,
+    hour: +parts.hour === 24 ? 0 : +parts.hour, minute: +parts.minute,
+    dateKey: `${parts.year}-${parts.month}-${parts.day}`
+  };
+}
+
+function dateFromKey(key) {
+  const [y, m, d] = key.split('-').map(Number);
+  return new Date(y, m - 1, d, 12, 0, 0);
+}
+
+function keyFromDate(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
+function mondayOf(date) {
+  const d = new Date(date);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  d.setHours(12, 0, 0, 0);
+  return d;
+}
+
+function addDays(date, n) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + n);
+  return d;
+}
+
+function updateHeader() {
+  const n = nowCDMX();
+  $('dateNum').textContent = String(n.day).padStart(2, '0');
+  const dt = new Date(n.year, n.month - 1, n.day);
+  const wdIdx = (dt.getDay() + 6) % 7;
+  $('dateWeekday').textContent = WEEKDAYS_ES[wdIdx];
+  $('dateMonth').textContent = MONTHS_ES[n.month - 1] + ' ' + n.year;
+  $('dateTime').textContent = `${String(n.hour).padStart(2,'0')}:${String(n.minute).padStart(2,'0')}`;
+}
+
+function notesByDay(weekKey, dayKey) {
+  return state.notes
+    .filter(n => n.type === 'day' && n.weekKey === weekKey && n.dayKey === dayKey)
+    .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+}
+
+function prioritiesOfWeek(weekKey) {
+  return state.notes
+    .filter(n => n.type === 'priority' && n.weekKey === weekKey)
+    .sort((a, b) => (a.createdAt?.seconds || 0) - (b.createdAt?.seconds || 0));
+}
+
+function renderWeek() {
+  const monday = dateFromKey(currentWeekStart);
+  const sunday = addDays(monday, 6);
+  const todayKey = nowCDMX().dateKey;
+
+  const fmtRange = (d1, d2) => {
+    const m1 = MONTHS_ES[d1.getMonth()].slice(0, 3);
+    const m2 = MONTHS_ES[d2.getMonth()].slice(0, 3);
+    if (d1.getMonth() === d2.getMonth()) return `${d1.getDate()} – ${d2.getDate()} ${m1} ${d1.getFullYear()}`;
+    return `${d1.getDate()} ${m1} – ${d2.getDate()} ${m2} ${d2.getFullYear()}`;
+  };
+  $('weekLabel').textContent = fmtRange(monday, sunday);
+
+  const grid = $('weekGrid');
+  grid.innerHTML = '';
+
+  for (let i = 0; i < 7; i++) {
+    const dayDate = addDays(monday, i);
+    const dayKey = keyFromDate(dayDate);
+    const isToday = dayKey === todayKey;
+
+    const card = document.createElement('div');
+    card.className = `day-card day-${i + 1}${isToday ? ' today' : ''}`;
+    card.innerHTML = `
+      <div class="day-header">
+        <span class="day-name">${WEEKDAYS_ES[i]}</span>
+        <span class="day-num">${String(dayDate.getDate()).padStart(2,'0')}</span>
+      </div>
+      <div class="day-card-body">
+        <div class="notes-list"></div>
+        <button class="add-note-btn">+ añadir</button>
+        <span class="day-heart">♥</span>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    const list = card.querySelector('.notes-list');
+    notesByDay(currentWeekStart, dayKey).forEach(note => list.appendChild(renderNote(note)));
+
+    card.querySelector('.add-note-btn').onclick = (e) => {
+      e.stopPropagation();
+      openNoteModal({ type: 'day', weekKey: currentWeekStart, dayKey });
+    };
+  }
+
+  const prio = document.createElement('div');
+  prio.className = 'side-panel priorities-panel';
+  prio.innerHTML = `
+    <div class="panel-header">
+      <span>Prioridades</span>
+      <button class="add-note-btn" style="padding: 3px 10px; font-size: 11px;">+</button>
+    </div>
+    <div class="panel-list"></div>
+  `;
+  grid.appendChild(prio);
+  const prioList = prio.querySelector('.panel-list');
+  const prios = prioritiesOfWeek(currentWeekStart);
+  if (prios.length === 0) {
+    prio.classList.add('empty');
+    prioList.innerHTML = '<div class="empty-state">Sin prioridades ♥</div>';
+  } else {
+    prios.forEach(p => prioList.appendChild(renderNote(p)));
+  }
+  prio.querySelector('.add-note-btn').onclick = () => openNoteModal({ type: 'priority', weekKey: currentWeekStart });
+}
+
+function renderNote(note) {
+  const div = document.createElement('div');
+  div.className = 'note-item' + (note.done ? ' done' : '');
+  const reminderHtml = note.reminder
+    ? `<span>⏰ ${new Date(note.reminder).toLocaleString('es-MX', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'})}</span>`
+    : '';
+  const authorHtml = note.author ? `<span class="note-author">@${escapeHtml(note.author)}</span>` : '';
+  const imgHtml = note.image ? `<img class="note-thumb" src="${note.image}" alt="">` : '';
+
+  div.innerHTML = `
+    <input type="checkbox" class="note-check" ${note.done ? 'checked' : ''}>
+    <div class="note-content">
+      <div class="note-text"></div>
+      ${imgHtml}
+      <div class="note-meta">${authorHtml}${reminderHtml}</div>
+    </div>
+    <button class="del-btn" title="Eliminar">×</button>
+  `;
+  div.querySelector('.note-text').textContent = note.text;
+  div.querySelector('.note-check').onclick = async (e) => {
+    e.stopPropagation();
+    try { await updateDoc(doc(db, 'notes', note.id), { done: e.target.checked }); }
+    catch (err) { showToast('Error al actualizar'); console.error(err); }
+  };
+  div.querySelector('.del-btn').onclick = async (e) => {
+    e.stopPropagation();
+    if (!confirm('¿Eliminar?')) return;
+    try {
+      if (note.imagePath) {
+        try { await deleteObject(sRef(storage, note.imagePath)); } catch(err) { console.warn('image delete', err); }
+      }
+      await deleteDoc(doc(db, 'notes', note.id));
+    } catch (err) { showToast('Error al eliminar'); console.error(err); }
+  };
+  const thumb = div.querySelector('.note-thumb');
+  if (thumb) { thumb.onclick = (e) => { e.stopPropagation(); openImgViewer(note.image); }; }
+  div.onclick = (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.tagName === 'IMG') return;
+    openNoteModal({ type: note.type, weekKey: note.weekKey, dayKey: note.dayKey, edit: note });
+  };
+  return div;
+}
+
+function openNoteModal(ctx) {
+  currentEditing = ctx;
+  show($('noteModal'));
+  const title = ctx.edit ? 'Editar' : 'Nueva';
+  const labelSuffix = ctx.type === 'day' ? 'nota del día' : 'prioridad';
+  $('noteModalTitle').textContent = `${title} ${labelSuffix}`;
+  $('noteText').value = ctx.edit?.text || '';
+  const preview = $('imagePreview');
+  if (ctx.edit?.image) { preview.src = ctx.edit.image; show(preview); preview.dataset.existing = '1'; }
+  else { preview.src = ''; hide(preview); delete preview.dataset.existing; }
+  if (ctx.type === 'priority') show($('reminderRow')); else hide($('reminderRow'));
+  $('reminderTime').value = ctx.edit?.reminder || '';
+  $('noteImage').value = '';
+  hide($('uploadProgress'));
+  setTimeout(() => $('noteText').focus(), 50);
+}
+
+function closeNoteModal() {
+  hide($('noteModal'));
+  currentEditing = null;
+}
+
+$('noteCancel').onclick = closeNoteModal;
+$('noteModal').onclick = (e) => { if (e.target.id === 'noteModal') closeNoteModal(); };
+
+let pendingImageFile = null;
+
+$('noteImage').onchange = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (file.size > 5 * 1024 * 1024) { showToast('Imagen muy pesada (máx 5MB)'); return; }
+  pendingImageFile = file;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const preview = $('imagePreview');
+    preview.src = ev.target.result;
+    show(preview);
+    delete preview.dataset.existing;
+  };
+  reader.readAsDataURL(file);
+};
+
+async function uploadImage(file) {
+  const path = `notes/${Date.now()}_${Math.random().toString(36).slice(2,8)}_${file.name.replace(/[^\w.-]/g,'_')}`;
+  const ref = sRef(storage, path);
+  await uploadBytes(ref, file);
+  const url = await getDownloadURL(ref);
+  return { url, path };
+}
+
+$('noteSave').onclick = async () => {
+  if (!currentEditing) return;
+  const text = $('noteText').value.trim();
+  if (!text) { showToast('Escribe algo primero'); return; }
+  const reminder = $('reminderTime').value || null;
+  const ctx = currentEditing;
+  const preview = $('imagePreview');
+  const existing = preview.dataset.existing === '1';
+
+  $('noteSave').disabled = true;
+  $('noteCancel').disabled = true;
+
+  try {
+    let imageUrl = ctx.edit?.image || null;
+    let imagePath = ctx.edit?.imagePath || null;
+
+    if (pendingImageFile) {
+      show($('uploadProgress'));
+      if (ctx.edit?.imagePath) {
+        try { await deleteObject(sRef(storage, ctx.edit.imagePath)); } catch(e) { console.warn(e); }
+      }
+      const r = await uploadImage(pendingImageFile);
+      imageUrl = r.url;
+      imagePath = r.path;
+      pendingImageFile = null;
+      hide($('uploadProgress'));
+    } else if (!existing && !preview.src) {
+      if (ctx.edit?.imagePath) {
+        try { await deleteObject(sRef(storage, ctx.edit.imagePath)); } catch(e) {}
+      }
+      imageUrl = null;
+      imagePath = null;
+    }
+
+    if (ctx.edit) {
+      const updates = {
+        text,
+        image: imageUrl,
+        imagePath: imagePath,
+        reminder: ctx.type === 'priority' ? reminder : null
+      };
+      if (ctx.type === 'priority' && reminder !== ctx.edit.reminder) {
+        notifiedIds.delete(ctx.edit.id);
+        localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...notifiedIds]));
+      }
+      await updateDoc(doc(db, 'notes', ctx.edit.id), updates);
+    } else {
+      await addDoc(collection(db, 'notes'), {
+        text,
+        image: imageUrl,
+        imagePath: imagePath,
+        done: false,
+        author: currentAlias,
+        authorEmail: currentUser.email,
+        createdAt: serverTimestamp(),
+        type: ctx.type,
+        weekKey: ctx.weekKey,
+        dayKey: ctx.dayKey || null,
+        reminder: ctx.type === 'priority' ? reminder : null
+      });
+    }
+    closeNoteModal();
+  } catch (err) {
+    console.error(err);
+    showToast('Error al guardar');
+    hide($('uploadProgress'));
+  } finally {
+    $('noteSave').disabled = false;
+    $('noteCancel').disabled = false;
+  }
+};
+
+function openImgViewer(src) {
+  $('imgViewerImg').src = src;
+  $('imgDownload').href = src;
+  show($('imgViewer'));
+}
+
+$('imgClose').onclick = () => hide($('imgViewer'));
+$('imgViewer').onclick = (e) => { if (e.target.id === 'imgViewer') hide($('imgViewer')); };
+
+$('prevWeek').onclick = () => {
+  currentWeekStart = keyFromDate(addDays(dateFromKey(currentWeekStart), -7));
+  renderWeek();
+};
+$('nextWeek').onclick = () => {
+  currentWeekStart = keyFromDate(addDays(dateFromKey(currentWeekStart), 7));
+  renderWeek();
+};
+$('todayBtn').onclick = () => goToToday();
+
+function goToToday() {
+  const n = nowCDMX();
+  const today = new Date(n.year, n.month - 1, n.day);
+  currentWeekStart = keyFromDate(mondayOf(today));
+  switchView('Week');
+  renderWeek();
+}
+
+function switchView(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.view === name));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const el = $('view' + name);
+  if (el) el.classList.add('active');
+  if (name === 'Calendar') renderCalendar();
+  if (name === 'Chat') renderChat();
+  if (name === 'Reminders') renderReminders();
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => { btn.onclick = () => switchView(btn.dataset.view); });
+
+function renderCalendar() {
+  if (!calMonth) {
+    const n = nowCDMX();
+    calMonth = new Date(n.year, n.month - 1, 1);
+  }
+  $('monthLabel').textContent = MONTHS_ES[calMonth.getMonth()] + ' ' + calMonth.getFullYear();
+  const grid = $('calGrid');
+  grid.innerHTML = '';
+  const first = new Date(calMonth.getFullYear(), calMonth.getMonth(), 1);
+  const startOffset = (first.getDay() + 6) % 7;
+  const lastDay = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 0).getDate();
+  const todayKey = nowCDMX().dateKey;
+  const weekDates = new Set();
+  if (currentWeekStart) {
+    const m = dateFromKey(currentWeekStart);
+    for (let i = 0; i < 7; i++) weekDates.add(keyFromDate(addDays(m, i)));
+  }
+  const prevLastDay = new Date(calMonth.getFullYear(), calMonth.getMonth(), 0).getDate();
+  for (let i = startOffset - 1; i >= 0; i--) {
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell muted';
+    cell.textContent = prevLastDay - i;
+    grid.appendChild(cell);
+  }
+  for (let d = 1; d <= lastDay; d++) {
+    const dt = new Date(calMonth.getFullYear(), calMonth.getMonth(), d);
+    const k = keyFromDate(dt);
+    const cell = document.createElement('div');
+    cell.className = 'cal-cell';
+    if (k === todayKey) cell.classList.add('today');
+    if (weekDates.has(k)) cell.classList.add('in-week');
+    cell.textContent = d;
+    cell.onclick = () => {
+      currentWeekStart = keyFromDate(mondayOf(dt));
+      switchView('Week');
+      renderWeek();
+    };
+    grid.appendChild(cell);
+  }
+}
+
+$('prevMonth').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() - 1, 1); renderCalendar(); };
+$('nextMonth').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth() + 1, 1); renderCalendar(); };
+
+function renderChat() {
+  const c = $('chatMessages');
+  c.innerHTML = '';
+  if (state.chat.length === 0) {
+    c.innerHTML = '<div class="empty-state">Sin mensajes todavía ♥</div>';
+    return;
+  }
+  state.chat.forEach(m => {
+    const div = document.createElement('div');
+    const isMe = m.authorEmail === currentUser?.email;
+    div.className = 'msg ' + (isMe ? 'me' : 'them');
+    const ts = m.ts?.toDate ? m.ts.toDate() : new Date(m.ts || Date.now());
+    div.innerHTML = `
+      <div>${escapeHtml(m.text)}</div>
+      <div class="msg-meta">@${escapeHtml(m.author || '')} · ${ts.toLocaleString('es-MX', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'})}</div>
+    `;
+    c.appendChild(div);
+  });
+  c.scrollTop = c.scrollHeight;
+}
+
+$('chatSend').onclick = async () => {
+  const inp = $('chatInput');
+  const t = inp.value.trim();
+  if (!t) return;
+  inp.value = '';
+  try {
+    await addDoc(collection(db, 'chat'), {
+      text: t,
+      author: currentAlias,
+      authorEmail: currentUser.email,
+      ts: serverTimestamp()
+    });
+  } catch (err) { showToast('Error al enviar'); console.error(err); inp.value = t; }
+};
+
+$('chatInput').onkeydown = (e) => { if (e.key === 'Enter') $('chatSend').click(); };
+
+function renderReminders() {
+  const list = $('remindersList');
+  list.innerHTML = '';
+  const all = state.notes
+    .filter(n => n.type === 'priority' && !n.done)
+    .sort((a, b) => (a.reminder || 'z').localeCompare(b.reminder || 'z'));
+  if (all.length === 0) {
+    list.innerHTML = '<div class="empty-state">Sin prioridades pendientes ♥</div>';
+    return;
+  }
+  all.forEach(item => list.appendChild(renderNote(item)));
+}
+
+function updateReminderBadge() {
+  const count = state.notes.filter(n => n.type === 'priority' && !n.done).length;
+  const b = $('reminderBadge');
+  if (count > 0) { b.textContent = count > 9 ? '9+' : count; b.classList.remove('hidden'); }
+  else { b.classList.add('hidden'); }
+}
+
+function checkReminders() {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const now = Date.now();
+  state.notes.forEach(p => {
+    if (p.type === 'priority' && p.reminder && !p.done && !notifiedIds.has(p.id)) {
+      const rt = new Date(p.reminder).getTime();
+      if (rt <= now && now - rt < 5 * 60 * 1000) {
+        try { new Notification('Recordatorio ♥', { body: p.text }); } catch(e) {}
+        notifiedIds.add(p.id);
+        localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...notifiedIds]));
+      }
+    }
+  });
+}
+
+$('userPill').onclick = () => switchView('Settings');
+
+function spawnPetals() {
+  const bg = $('sakuraBg');
+  const n = window.innerWidth < 800 ? 7 : 14;
+  for (let i = 0; i < n; i++) {
+    const p = document.createElement('div');
+    p.className = 'petal';
+    p.style.left = (Math.random() * 100) + '%';
+    p.style.animationDuration = (12 + Math.random() * 14) + 's';
+    p.style.animationDelay = (Math.random() * 14) + 's';
+    const scale = 0.7 + Math.random() * 0.7;
+    p.innerHTML = `<svg viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;transform:scale(${scale})"><path d="M10 0 C 4 8, 4 20, 10 30 C 16 20, 16 8, 10 0 Z" fill="#FFB6C9"/></svg>`;
+    bg.appendChild(p);
+  }
+}
+
+spawnPetals();
+setInterval(updateHeader, 30 * 1000);
+setInterval(checkReminders, 30 * 1000);
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    if (!$('noteModal').classList.contains('hidden')) closeNoteModal();
+    if (!$('imgViewer').classList.contains('hidden')) hide($('imgViewer'));
+  }
+});
+</script>
+</body>
+</html>
