@@ -401,10 +401,61 @@ input[type="file"] { display: none; }
   .date-month { font-size: 11px; }
   .date-time { font-size: 18px; padding-left: 12px; }
   .header-actions { width: 100%; justify-content: flex-end; }
-  .week-grid { grid-template-columns: 1fr; grid-template-rows: auto; gap: 12px; }
-  .day-card, .priorities-panel { grid-column: 1 !important; grid-row: auto !important; min-height: 180px; }
-  .priorities-panel { align-self: stretch; }
+
+  .week-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-rows: auto;
+    gap: 10px;
+  }
+  .day-1 { grid-column: 1; grid-row: 1; }
+  .day-2 { grid-column: 2; grid-row: 1; }
+  .day-3 { grid-column: 3; grid-row: 1; }
+  .day-4 { grid-column: 1; grid-row: 2; }
+  .day-5 { grid-column: 2; grid-row: 2; }
+  .day-6 { grid-column: 3; grid-row: 2; }
+  .day-7 { grid-column: 1; grid-row: 3; }
+  .priorities-panel {
+    grid-column: 1 / -1 !important;
+    grid-row: 4 !important;
+    align-self: stretch;
+    max-height: none;
+  }
+  .day-card { min-height: 160px; }
+  .day-card .day-header { padding: 6px 10px; }
+  .day-name { font-size: 10px; letter-spacing: 1px; }
+  .day-num { font-size: 13px; }
+  .day-card-body { padding: 8px 8px 12px; }
+  .note-item { padding: 6px 8px; font-size: 11.5px; }
+  .note-text { font-size: 11.5px; line-height: 1.4; }
+  .add-note-btn { font-size: 10px; padding: 5px; }
+  .day-heart { font-size: 12px; bottom: 6px; right: 10px; }
+
   .week-label { min-width: auto; font-size: 12px; padding: 0 6px; }
+}
+
+@media (max-width: 640px) {
+  .main { padding: 12px 10px 90px; gap: 12px; }
+  .date-display { padding: 10px 14px; gap: 10px; }
+  .date-num { font-size: 36px; min-width: 44px; }
+  .date-weekday { font-size: 13px; }
+  .date-time { font-size: 16px; padding-left: 10px; margin-left: 4px; }
+
+  .week-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .day-1 { grid-column: 1; grid-row: 1; }
+  .day-2 { grid-column: 2; grid-row: 1; }
+  .day-3 { grid-column: 1; grid-row: 2; }
+  .day-4 { grid-column: 2; grid-row: 2; }
+  .day-5 { grid-column: 1; grid-row: 3; }
+  .day-6 { grid-column: 2; grid-row: 3; }
+  .day-7 { grid-column: 1 / -1; grid-row: 4; min-height: 130px; }
+  .priorities-panel {
+    grid-row: 5 !important;
+  }
+  .day-card { min-height: 140px; }
+  .note-item { padding: 6px 7px; }
 }
 </style>
 </head>
