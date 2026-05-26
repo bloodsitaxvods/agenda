@@ -321,12 +321,15 @@ body {
 
 .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
 
-.cal-cell { aspect-ratio: 1; background: var(--pink-pastel); border: 1px solid var(--border-soft); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 600; color: var(--text); }
+.cal-cell { aspect-ratio: 1; background: var(--pink-pastel); border: 1px solid var(--border-soft); border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 600; color: var(--text); position: relative; gap: 2px; }
 .cal-cell:hover { background: var(--pink-soft); color: #fff; }
 .cal-cell.today { background: var(--pink); color: #fff; font-weight: 700; box-shadow: 0 4px 10px rgba(232, 114, 155, 0.3); }
 .cal-cell.muted { opacity: 0.35; background: var(--card-2); color: var(--text-mute); }
 .cal-cell.in-week { border-color: var(--pink); background: var(--pink-soft); color: #fff; }
 .cal-cell.in-week.today { background: var(--pink); }
+.cal-mark { font-size: 10px; line-height: 1; color: var(--pink-deep); opacity: 0.85; }
+.cal-cell.today .cal-mark, .cal-cell.in-week .cal-mark, .cal-cell:hover .cal-mark { color: #fff; opacity: 1; }
+.cal-mark.done { opacity: 0.45; }
 
 .cal-header-row { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-mute); text-align: center; font-weight: 700; padding-bottom: 4px; }
 .cal-nav { display: flex; align-items: center; gap: 12px; justify-content: center; }
@@ -715,6 +718,7 @@ function startListeners() {
     const activeView = document.querySelector('.tab-btn.active')?.dataset.view;
     if (activeView === 'Week') renderWeek();
     if (activeView === 'Reminders') renderReminders();
+    if (activeView === 'Calendar') renderCalendar();
     updateReminderBadge();
   }, (err) => { console.error('notes listener', err); showToast('Error de sincronización'); });
 
@@ -1090,7 +1094,22 @@ function renderCalendar() {
     cell.className = 'cal-cell';
     if (k === todayKey) cell.classList.add('today');
     if (weekDates.has(k)) cell.classList.add('in-week');
-    cell.textContent = d;
+
+    const dayNotes = state.notes.filter(n => n.type === 'day' && n.dayKey === k);
+    const hasPending = dayNotes.some(n => !n.done);
+    const hasNotes = dayNotes.length > 0;
+
+    const numSpan = document.createElement('span');
+    numSpan.textContent = d;
+    cell.appendChild(numSpan);
+
+    if (hasNotes) {
+      const mark = document.createElement('span');
+      mark.className = 'cal-mark' + (hasPending ? '' : ' done');
+      mark.textContent = '♥';
+      cell.appendChild(mark);
+    }
+
     cell.onclick = () => {
       currentWeekStart = keyFromDate(mondayOf(dt));
       switchView('Week');
