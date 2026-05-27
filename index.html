@@ -25,6 +25,12 @@
   --border-soft: #FCEEF2;
   --done: #C5AEB7;
   --heart: #FF8FA8;
+  --supor-accent: #B89FE5;
+  --supor-accent-soft: #E8DEF8;
+  --bloody-accent: #FF8FA8;
+  --bloody-accent-soft: #FFD9E2;
+  --gold: #F2C94C;
+  --gold-soft: #FFE9A8;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -264,10 +270,175 @@ body {
 .note-item {
   background: var(--pink-pastel); border: 1px solid var(--border-soft); border-radius: 10px;
   padding: 8px 10px; display: flex; align-items: flex-start; gap: 7px;
-  font-size: 12px; cursor: pointer; transition: background 0.2s, border-color 0.2s; position: relative;
+  font-size: 12px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s, background 0.2s, border-color 0.2s; position: relative;
 }
 
-.note-item:hover { background: #FFDAE5; border-color: var(--pink-soft); }
+.note-item:hover { background: #FFDAE5; border-color: var(--pink-soft); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(232, 114, 155, 0.15); }
+
+.note-item.by-supor { border-left: 3px solid var(--supor-accent); }
+.note-item.by-bloody { border-left: 3px solid var(--bloody-accent); }
+.note-item.by-supor .note-author { color: #7A5BC4; }
+.note-item.by-bloody .note-author { color: #E85C7E; }
+
+.note-emoji { font-size: 14px; line-height: 1; flex-shrink: 0; margin-right: 2px; }
+
+.emoji-picker { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 12px; }
+.emoji-option { width: 38px; height: 38px; border-radius: 10px; background: var(--card-2); border: 2px solid transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; transition: all 0.15s; }
+.emoji-option:hover { background: var(--pink-pastel); }
+.emoji-option.selected { border-color: var(--pink); background: var(--pink-pastel); transform: scale(1.08); }
+
+.day-card.special::after {
+  content: ''; position: absolute; inset: 0; border-radius: 18px; pointer-events: none;
+  background: radial-gradient(ellipse at top, rgba(242, 201, 76, 0.18), transparent 60%); z-index: 1;
+}
+.day-card.special .day-header { background: linear-gradient(135deg, var(--gold-soft), var(--pink-pastel)) !important; }
+.day-card.special .day-header::before { content: '✨'; margin-right: 4px; font-size: 12px; }
+
+.welcome-anim {
+  position: fixed; inset: 0; z-index: 4500;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg); pointer-events: none;
+  animation: welcomeFade 1.6s ease-out forwards;
+}
+.welcome-heart {
+  font-size: 80px; color: var(--pink);
+  filter: drop-shadow(0 6px 16px rgba(232, 114, 155, 0.45));
+  animation: welcomeHeart 1.6s ease-out forwards;
+}
+
+@keyframes welcomeFade {
+  0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; visibility: hidden; }
+}
+@keyframes welcomeHeart {
+  0% { transform: scale(0.2); opacity: 0; }
+  30% { transform: scale(1.15); opacity: 1; }
+  50% { transform: scale(1); opacity: 1; }
+  75% { transform: scale(0.6) translate(-30vw, -35vh); opacity: 0.5; }
+  100% { transform: scale(0.1) translate(-45vw, -45vh); opacity: 0; }
+}
+
+.confetti-piece { position: fixed; width: 12px; height: 12px; pointer-events: none; z-index: 1500; animation: confettiFall 1s ease-out forwards; }
+@keyframes confettiFall {
+  0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translate(var(--dx), var(--dy)) rotate(var(--rot)) scale(0.4); opacity: 0; }
+}
+
+.msg-wrapper { display: flex; flex-direction: column; max-width: 75%; align-self: flex-start; position: relative; }
+.msg-wrapper.me { align-self: flex-end; align-items: flex-end; }
+.msg-reactions { display: flex; gap: 4px; margin-top: 4px; flex-wrap: wrap; }
+.msg-reaction { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px; font-size: 11px; display: inline-flex; align-items: center; gap: 3px; cursor: pointer; transition: all 0.15s; }
+.msg-reaction:hover { background: var(--pink-pastel); border-color: var(--pink-soft); }
+.msg-reaction.mine { background: var(--pink-pastel); border-color: var(--pink-soft); font-weight: 700; }
+.msg-reaction .count { color: var(--text-mute); font-weight: 600; }
+.msg-reaction.mine .count { color: var(--pink-deep); }
+
+.reaction-picker {
+  position: absolute; bottom: -36px; background: var(--card);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 4px 8px; display: flex; gap: 4px;
+  box-shadow: 0 6px 18px rgba(232, 114, 155, 0.2);
+  z-index: 50; opacity: 0; transform: scale(0.85); pointer-events: none;
+  transition: all 0.18s ease-out;
+}
+.msg-wrapper.show-picker .reaction-picker { opacity: 1; transform: scale(1); pointer-events: auto; }
+.msg-wrapper.me .reaction-picker { right: 0; }
+.msg-wrapper.them .reaction-picker { left: 0; }
+.reaction-pick-btn { background: transparent; border: none; cursor: pointer; font-size: 18px; padding: 2px 6px; border-radius: 999px; transition: transform 0.15s; }
+.reaction-pick-btn:hover { transform: scale(1.25); }
+
+.typing-indicator { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--text-mute); padding: 4px 18px 8px; font-style: italic; }
+.typing-dots { display: inline-flex; gap: 3px; }
+.typing-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--pink-soft); animation: typingDot 1.2s infinite; }
+.typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingDot {
+  0%, 60%, 100% { opacity: 0.3; transform: scale(0.8); }
+  30% { opacity: 1; transform: scale(1.1); }
+}
+
+.sticker-btn {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--card); border: 1px solid var(--border);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0; transition: all 0.15s;
+}
+.sticker-btn:hover { background: var(--pink-pastel); border-color: var(--pink-soft); }
+
+.sticker-panel {
+  position: absolute; bottom: 60px; left: 12px; right: 12px;
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 14px;
+  box-shadow: 0 -8px 24px rgba(232, 114, 155, 0.18);
+  display: none; max-height: 240px; overflow-y: auto;
+  z-index: 50;
+}
+.sticker-panel.show { display: block; }
+.sticker-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.sticker-item {
+  aspect-ratio: 1; background: var(--card-2); border: 1px solid transparent;
+  border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; transition: all 0.15s;
+}
+.sticker-item:hover { background: var(--pink-pastel); border-color: var(--pink-soft); transform: scale(1.1); }
+.sticker-category { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-mute); margin: 10px 0 6px; font-weight: 700; }
+.sticker-category:first-child { margin-top: 0; }
+
+.msg.sticker-msg { background: transparent !important; border: none !important; box-shadow: none !important; font-size: 48px; padding: 4px 8px; }
+.msg.sticker-msg + .msg-meta { font-size: 10px; }
+
+.special-dates-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.special-date-item { display: flex; align-items: center; gap: 10px; background: var(--card-2); border: 1px solid var(--border-soft); border-radius: 10px; padding: 8px 12px; }
+.special-date-item .sd-date { font-family: 'Fredoka'; font-weight: 600; color: var(--pink-deep); min-width: 70px; font-size: 13px; }
+.special-date-item .sd-label { flex: 1; font-size: 13px; }
+.special-date-item .sd-del { background: transparent; border: none; color: var(--text-mute); cursor: pointer; font-size: 16px; opacity: 0.5; }
+.special-date-item .sd-del:hover { opacity: 1; color: var(--pink); }
+
+.special-input-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.special-input-row .field-input { flex: 1; min-width: 120px; }
+
+.gold-petal-svg { color: var(--gold); }
+
+body.widget-mode .sidebar,
+body.widget-mode .header,
+body.widget-mode .week-nav,
+body.widget-mode #viewChat,
+body.widget-mode #viewCalendar,
+body.widget-mode #viewSettings,
+body.widget-mode #viewReminders,
+body.widget-mode .sakura-bg { display: none !important; }
+body.widget-mode .app { grid-template-columns: 1fr !important; }
+body.widget-mode .main { padding: 12px !important; }
+body.widget-mode .widget-header { display: flex !important; }
+.widget-header { display: none; }
+body.widget-mode .week-grid { grid-template-columns: 1fr !important; grid-template-rows: auto !important; gap: 10px !important; min-height: auto !important; }
+body.widget-mode .day-card:not(.today) { display: none !important; }
+body.widget-mode .day-card.today { grid-column: 1 / -1 !important; grid-row: 1 !important; min-height: auto !important; }
+body.widget-mode .priorities-panel { grid-column: 1 / -1 !important; grid-row: 2 !important; align-self: stretch !important; max-height: none !important; }
+
+.widget-header { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 10px 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+.widget-title { font-family: 'Fredoka'; font-weight: 600; font-size: 14px; color: var(--pink-deep); }
+.widget-close { background: transparent; border: none; color: var(--text-mute); cursor: pointer; font-size: 18px; text-decoration: none; padding: 4px 8px; }
+
+.settings-section { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); }
+.settings-section-title { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-mute); font-weight: 700; margin-bottom: 10px; }
+
+.toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; gap: 12px; }
+.toggle-label-wrap { flex: 1; }
+.toggle-label { font-size: 14px; color: var(--text); font-weight: 600; }
+.toggle-sub { font-size: 11px; color: var(--text-mute); margin-top: 2px; }
+
+.toggle-switch {
+  width: 44px; height: 24px; background: var(--border); border-radius: 999px;
+  position: relative; cursor: pointer; transition: background 0.2s; flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--pink); }
+.toggle-switch::after {
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 20px; height: 20px; background: #fff; border-radius: 50%;
+  transition: transform 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.toggle-switch.on::after { transform: translateX(20px); }
 
 .note-check {
   appearance: none; width: 14px; height: 14px; min-width: 14px;
@@ -461,6 +632,10 @@ input[type="file"] { display: none; }
 </head>
 <body>
 
+<div class="welcome-anim hidden" id="welcomeAnim">
+  <div class="welcome-heart">♥</div>
+</div>
+
 <div class="sakura-bg" id="sakuraBg"></div>
 
 <div class="gate" id="loadingGate">
@@ -523,6 +698,11 @@ input[type="file"] { display: none; }
 
   <main class="main">
 
+    <div class="widget-header">
+      <div class="widget-title">💖 Widget · Solo hoy</div>
+      <a class="widget-close" href="./" title="Salir del widget">×</a>
+    </div>
+
     <header class="header">
       <div class="date-display">
         <div class="date-num" id="dateNum">--</div>
@@ -555,9 +735,15 @@ input[type="file"] { display: none; }
     </div>
 
     <div class="view" id="viewChat">
-      <div class="chat-view" style="display: flex; flex-direction: column; flex: 1;">
+      <div class="chat-view" style="display: flex; flex-direction: column; flex: 1; position: relative;">
         <div class="chat-messages" id="chatMessages"></div>
+        <div class="typing-indicator hidden" id="typingIndicator">
+          <span id="typingName"></span> está escribiendo
+          <span class="typing-dots"><span></span><span></span><span></span></span>
+        </div>
+        <div class="sticker-panel" id="stickerPanel"></div>
         <div class="chat-input-bar">
+          <button class="sticker-btn" id="stickerToggle" title="Stickers">🌸</button>
           <input type="text" class="chat-input" id="chatInput" placeholder="Escribe un mensaje...">
           <button class="chat-send" id="chatSend" title="Enviar">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
@@ -601,7 +787,50 @@ input[type="file"] { display: none; }
         <div style="margin-top: 6px;">
           <button class="btn btn-danger" id="signOutBtn">Cerrar sesión</button>
         </div>
-        <div style="margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--border); font-size: 12px; color: var(--text-mute); line-height: 1.5;">
+
+        <div class="settings-section">
+          <div class="settings-section-title">Preferencias</div>
+          <div class="toggle-row">
+            <div class="toggle-label-wrap">
+              <div class="toggle-label">Sonidos suaves</div>
+              <div class="toggle-sub">Burbujita al completar tarea, campanita al recibir mensaje</div>
+            </div>
+            <div class="toggle-switch" id="toggleSounds"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label-wrap">
+              <div class="toggle-label">Notificaciones de mensajes y notas</div>
+              <div class="toggle-sub">Avisar cuando la otra persona añada algo</div>
+            </div>
+            <div class="toggle-switch on" id="togglePartnerNotif"></div>
+          </div>
+          <div class="toggle-row">
+            <div class="toggle-label-wrap">
+              <div class="toggle-label">Confeti al completar tareas</div>
+              <div class="toggle-sub">Pequeña celebración al marcar una nota</div>
+            </div>
+            <div class="toggle-switch on" id="toggleConfetti"></div>
+          </div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Fechas especiales</div>
+          <div style="font-size: 12px; color: var(--text-mute); line-height: 1.5;">Cumpleaños, aniversarios, fechas importantes. Aparecerán resaltadas con efecto dorado en la agenda.</div>
+          <div class="special-input-row">
+            <input type="date" id="specialDateInput" class="field-input">
+            <input type="text" id="specialLabelInput" class="field-input" placeholder="Ej: Aniversario del canal" maxlength="40">
+            <button class="btn btn-primary" id="addSpecialDate">Añadir</button>
+          </div>
+          <div class="special-dates-list" id="specialDatesList"></div>
+        </div>
+
+        <div class="settings-section">
+          <div class="settings-section-title">Widget</div>
+          <div style="font-size: 12px; color: var(--text-mute); line-height: 1.5; margin-bottom: 10px;">Vista mínima con solo el día de hoy y prioridades pendientes. Útil para OBS o ventana flotante.</div>
+          <a href="?widget=1" target="_blank" class="btn">📺 Abrir widget en ventana nueva</a>
+        </div>
+
+        <div class="settings-section" style="font-size: 12px; color: var(--text-mute); line-height: 1.5;">
           Todos los apuntes se guardan en la nube y se sincronizan automáticamente entre los dispositivos autorizados. Las imágenes se almacenan en Firebase Storage.
         </div>
       </div>
@@ -614,6 +843,18 @@ input[type="file"] { display: none; }
   <div class="modal">
     <h2 id="noteModalTitle">Nueva nota</h2>
     <textarea id="noteText" placeholder="Escribe aquí..."></textarea>
+    <label class="field-label" style="margin-top: 12px;">Categoría (opcional)</label>
+    <div class="emoji-picker" id="emojiPicker">
+      <div class="emoji-option selected" data-emoji="">∅</div>
+      <div class="emoji-option" data-emoji="💖">💖</div>
+      <div class="emoji-option" data-emoji="🌸">🌸</div>
+      <div class="emoji-option" data-emoji="⭐">⭐</div>
+      <div class="emoji-option" data-emoji="🎮">🎮</div>
+      <div class="emoji-option" data-emoji="🎬">🎬</div>
+      <div class="emoji-option" data-emoji="💻">💻</div>
+      <div class="emoji-option" data-emoji="🍰">🍰</div>
+      <div class="emoji-option" data-emoji="☕">☕</div>
+    </div>
     <label class="upload-btn" for="noteImage">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="M21 15l-5-5L5 21"/></svg>
       Adjuntar imagen
@@ -645,7 +886,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/fireba
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager,
-  collection, doc, addDoc, updateDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp }
+  collection, doc, addDoc, updateDoc, setDoc, deleteDoc, onSnapshot, query, orderBy, serverTimestamp, deleteField }
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import { getStorage, ref as sRef, uploadBytes, getDownloadURL, deleteObject }
   from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
@@ -677,13 +918,36 @@ const NOTIFIED_KEY = 'notified_reminders_v1';
 
 let currentUser = null;
 let currentAlias = null;
-let state = { notes: [], chat: [] };
+let state = { notes: [], chat: [], specialDates: [] };
 let currentWeekStart = null;
 let currentEditing = null;
+let currentEmoji = '';
 let calMonth = null;
 let notesUnsub = null;
 let chatUnsub = null;
+let specialDatesUnsub = null;
+let presenceUnsub = null;
 let notifiedIds = new Set(JSON.parse(localStorage.getItem(NOTIFIED_KEY) || '[]'));
+
+let prefs = {
+  sounds: localStorage.getItem('pref_sounds') === '1',
+  partnerNotif: localStorage.getItem('pref_partner_notif') !== '0',
+  confetti: localStorage.getItem('pref_confetti') !== '0'
+};
+
+let lastNotesCount = 0;
+let lastChatCount = 0;
+let appInitialized = false;
+let typingTimeout = null;
+let isWidgetMode = new URLSearchParams(location.search).get('widget') === '1';
+
+const STICKER_SETS = {
+  'Sakuras y corazones': ['🌸','💖','💕','💗','💓','♥️','💝','💘','🌷','🌹','💐','🌺'],
+  'Caritas': ['🥰','😊','😘','🤗','😋','🥺','😴','🤭','😻','🐱','🐰','🦋'],
+  'Reacciones': ['✨','⭐','💫','🎀','🎁','🍰','🍓','☕','🍵','🧸','🎮','📸']
+};
+
+const REACTIONS = ['♥', '😂', '👀', '✨'];
 
 const WEEKDAYS_ES = ['LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO', 'DOMINGO'];
 const MONTHS_ES = ['ENERO','FEBRERO','MARZO','ABRIL','MAYO','JUNIO','JULIO','AGOSTO','SEPTIEMBRE','OCTUBRE','NOVIEMBRE','DICIEMBRE'];
@@ -705,6 +969,65 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
+  }
+  return audioCtx;
+}
+
+function playSound(type) {
+  if (!prefs.sounds) return;
+  const ctx = getAudioCtx();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const o = ctx.createOscillator();
+  const g = ctx.createGain();
+  o.connect(g); g.connect(ctx.destination);
+  if (type === 'pop') {
+    o.frequency.setValueAtTime(880, now);
+    o.frequency.exponentialRampToValueAtTime(1320, now + 0.08);
+    g.gain.setValueAtTime(0.001, now);
+    g.gain.exponentialRampToValueAtTime(0.18, now + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+    o.start(now); o.stop(now + 0.2);
+  } else if (type === 'ding') {
+    o.frequency.setValueAtTime(1320, now);
+    o.frequency.exponentialRampToValueAtTime(1760, now + 0.15);
+    g.gain.setValueAtTime(0.001, now);
+    g.gain.exponentialRampToValueAtTime(0.12, now + 0.03);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+    o.start(now); o.stop(now + 0.42);
+  }
+}
+
+function spawnConfetti(originX, originY) {
+  if (!prefs.confetti) return;
+  const colors = ['#E8729B','#FFB6C9','#FFE4EC','#F2C94C','#FF8FA8','#C75A82'];
+  const shapes = ['♥','✨','🌸','💖'];
+  const count = 14;
+  for (let i = 0; i < count; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = originX + 'px';
+    piece.style.top = originY + 'px';
+    const angle = (Math.PI * 2 * i / count) + (Math.random() * 0.5);
+    const dist = 50 + Math.random() * 80;
+    piece.style.setProperty('--dx', Math.cos(angle) * dist + 'px');
+    piece.style.setProperty('--dy', (Math.sin(angle) * dist - 30) + 'px');
+    piece.style.setProperty('--rot', (Math.random() * 720 - 360) + 'deg');
+    piece.style.color = colors[i % colors.length];
+    piece.style.fontSize = (14 + Math.random() * 10) + 'px';
+    piece.style.background = 'transparent';
+    piece.textContent = shapes[i % shapes.length];
+    document.body.appendChild(piece);
+    setTimeout(() => piece.remove(), 1100);
+  }
+}
+
+function partnerKey(email) { return email === 'bloodsitaxvods@gmail.com' ? 'supor' : 'bloody'; }
+
 onAuthStateChanged(auth, (user) => {
   hide($('loadingGate'));
   if (!user) {
@@ -713,6 +1036,8 @@ onAuthStateChanged(auth, (user) => {
     hide($('appRoot'));
     if (notesUnsub) { notesUnsub(); notesUnsub = null; }
     if (chatUnsub) { chatUnsub(); chatUnsub = null; }
+    if (specialDatesUnsub) { specialDatesUnsub(); specialDatesUnsub = null; }
+    if (presenceUnsub) { presenceUnsub(); presenceUnsub = null; }
     return;
   }
   if (!ALLOWED_EMAILS.includes(user.email)) {
@@ -727,6 +1052,15 @@ onAuthStateChanged(auth, (user) => {
   hide($('loginGate'));
   hide($('deniedGate'));
   show($('appRoot'));
+
+  if (isWidgetMode) {
+    document.body.classList.add('widget-mode');
+  } else if (!appInitialized) {
+    show($('welcomeAnim'));
+    setTimeout(() => hide($('welcomeAnim')), 1700);
+  }
+  appInitialized = true;
+
   $('aliasDisplay').value = currentAlias;
   $('emailDisplay').value = user.email;
   $('userName').textContent = currentAlias;
@@ -735,7 +1069,9 @@ onAuthStateChanged(auth, (user) => {
   } else {
     $('userAvatar').textContent = currentAlias.charAt(0).toUpperCase();
   }
+  updatePrefsUI();
   startListeners();
+  startPresence();
   goToToday();
   updateHeader();
   if ('Notification' in window && Notification.permission === 'default') {
@@ -764,8 +1100,21 @@ $('signOutBtn').onclick = () => {
 
 function startListeners() {
   notesUnsub = onSnapshot(collection(db, 'notes'), (snap) => {
+    const prevIds = new Set(state.notes.map(n => n.id));
     state.notes = [];
     snap.forEach(d => state.notes.push({ id: d.id, ...d.data() }));
+
+    if (lastNotesCount > 0 && prefs.partnerNotif) {
+      state.notes.forEach(n => {
+        if (!prevIds.has(n.id) && n.authorEmail && n.authorEmail !== currentUser?.email) {
+          const label = n.type === 'priority' ? 'añadió una prioridad' : 'añadió una nota';
+          notifyPartner(`@${n.author} ${label}`, n.text);
+          playSound('ding');
+        }
+      });
+    }
+    lastNotesCount = state.notes.length;
+
     const activeView = document.querySelector('.tab-btn.active')?.dataset.view;
     if (activeView === 'Week') renderWeek();
     if (activeView === 'Reminders') renderReminders();
@@ -774,11 +1123,74 @@ function startListeners() {
   }, (err) => { console.error('notes listener', err); showToast('Error de sincronización'); });
 
   chatUnsub = onSnapshot(query(collection(db, 'chat'), orderBy('ts')), (snap) => {
+    const prevIds = new Set(state.chat.map(m => m.id));
     state.chat = [];
     snap.forEach(d => state.chat.push({ id: d.id, ...d.data() }));
+
+    if (lastChatCount > 0 && prefs.partnerNotif) {
+      state.chat.forEach(m => {
+        if (!prevIds.has(m.id) && m.authorEmail && m.authorEmail !== currentUser?.email) {
+          notifyPartner(`@${m.author}`, m.text || '🌸 Sticker');
+          playSound('ding');
+        }
+      });
+    }
+    lastChatCount = state.chat.length;
+
     const activeView = document.querySelector('.tab-btn.active')?.dataset.view;
     if (activeView === 'Chat') renderChat();
   }, (err) => { console.error('chat listener', err); });
+
+  specialDatesUnsub = onSnapshot(collection(db, 'specialDates'), (snap) => {
+    state.specialDates = [];
+    snap.forEach(d => state.specialDates.push({ id: d.id, ...d.data() }));
+    const activeView = document.querySelector('.tab-btn.active')?.dataset.view;
+    if (activeView === 'Week') renderWeek();
+    if (activeView === 'Settings') renderSpecialDates();
+    spawnPetals();
+  }, (err) => { console.error('specialDates listener', err); });
+}
+
+function notifyPartner(title, body) {
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  if (document.visibilityState === 'visible' && document.hasFocus()) return;
+  try { new Notification(title, { body: body?.slice(0, 100) || '', tag: 'partner_' + Date.now() }); } catch(e) {}
+}
+
+function startPresence() {
+  if (!currentUser) return;
+  const myKey = partnerKey(currentUser.email);
+  const otherKey = myKey === 'supor' ? 'bloody' : 'supor';
+  const myDoc = doc(db, 'presence', myKey);
+
+  const heartbeat = () => {
+    setDoc(myDoc, { typing: false, lastSeen: serverTimestamp() }, { merge: true }).catch(()=>{});
+  };
+  heartbeat();
+  const hbInterval = setInterval(heartbeat, 30000);
+
+  const partnerDoc = doc(db, 'presence', otherKey);
+  presenceUnsub = onSnapshot(partnerDoc, (snap) => {
+    const data = snap.data();
+    if (!data) { hide($('typingIndicator')); return; }
+    if (data.typing === true) {
+      $('typingName').textContent = '@' + (otherKey === 'supor' ? 'Supor' : 'Bloody');
+      show($('typingIndicator'));
+    } else {
+      hide($('typingIndicator'));
+    }
+  }, () => {});
+
+  window.addEventListener('beforeunload', () => {
+    clearInterval(hbInterval);
+    setDoc(myDoc, { typing: false }, { merge: true }).catch(()=>{});
+  });
+}
+
+function setMyTyping(typing) {
+  if (!currentUser) return;
+  const myDoc = doc(db, 'presence', partnerKey(currentUser.email));
+  setDoc(myDoc, { typing, lastSeen: serverTimestamp() }, { merge: true }).catch(()=>{});
 }
 
 function nowCDMX() {
@@ -864,9 +1276,10 @@ function renderWeek() {
     const dayDate = addDays(monday, i);
     const dayKey = keyFromDate(dayDate);
     const isToday = dayKey === todayKey;
+    const isSpecial = state.specialDates.some(sd => sd.date === dayKey);
 
     const card = document.createElement('div');
-    card.className = `day-card day-${i + 1}${isToday ? ' today' : ''}`;
+    card.className = `day-card day-${i + 1}${isToday ? ' today' : ''}${isSpecial ? ' special' : ''}`;
     card.innerHTML = `
       <div class="day-header">
         <span class="day-name">${WEEKDAYS_ES[i]}</span>
@@ -912,7 +1325,9 @@ function renderWeek() {
 
 function renderNote(note) {
   const div = document.createElement('div');
-  div.className = 'note-item' + (note.done ? ' done' : '');
+  const authorClass = note.authorEmail === 'bloodsitaxvods@gmail.com' ? 'by-supor' :
+                      note.authorEmail === 'bloodsitax@gmail.com' ? 'by-bloody' : '';
+  div.className = 'note-item ' + authorClass + (note.done ? ' done' : '');
 
   let timeHtml = '';
   if (note.createdAt?.toDate) {
@@ -932,21 +1347,29 @@ function renderNote(note) {
     : '';
   const authorHtml = note.author ? `<span class="note-author">@${escapeHtml(note.author)}</span>` : '';
   const imgHtml = note.image ? `<img class="note-thumb" src="${note.image}" alt="">` : '';
+  const emojiHtml = note.emoji ? `<span class="note-emoji">${note.emoji}</span>` : '';
 
   div.innerHTML = `
     <input type="checkbox" class="note-check" ${note.done ? 'checked' : ''}>
     <div class="note-content">
-      <div class="note-text"></div>
+      <div class="note-text" style="display: flex; align-items: flex-start; gap: 5px;">${emojiHtml}<span class="note-text-inner"></span></div>
       ${imgHtml}
       <div class="note-meta">${authorHtml}${timeHtml}${reminderHtml}</div>
     </div>
     <button class="del-btn" title="Eliminar">×</button>
   `;
-  div.querySelector('.note-text').textContent = note.text;
+  div.querySelector('.note-text-inner').textContent = note.text;
   div.querySelector('.note-check').onclick = async (e) => {
     e.stopPropagation();
-    try { await updateDoc(doc(db, 'notes', note.id), { done: e.target.checked }); }
-    catch (err) { showToast('Error al actualizar'); console.error(err); }
+    const checked = e.target.checked;
+    try {
+      await updateDoc(doc(db, 'notes', note.id), { done: checked });
+      if (checked) {
+        playSound('pop');
+        const rect = e.target.getBoundingClientRect();
+        spawnConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      }
+    } catch (err) { showToast('Error al actualizar'); console.error(err); }
   };
   div.querySelector('.del-btn').onclick = async (e) => {
     e.stopPropagation();
@@ -974,6 +1397,10 @@ function openNoteModal(ctx) {
   const labelSuffix = ctx.type === 'day' ? 'nota del día' : 'prioridad';
   $('noteModalTitle').textContent = `${title} ${labelSuffix}`;
   $('noteText').value = ctx.edit?.text || '';
+  currentEmoji = ctx.edit?.emoji || '';
+  document.querySelectorAll('.emoji-option').forEach(opt => {
+    opt.classList.toggle('selected', opt.dataset.emoji === currentEmoji);
+  });
   const preview = $('imagePreview');
   if (ctx.edit?.image) { preview.src = ctx.edit.image; show(preview); preview.dataset.existing = '1'; }
   else { preview.src = ''; hide(preview); delete preview.dataset.existing; }
@@ -991,6 +1418,13 @@ function closeNoteModal() {
 
 $('noteCancel').onclick = closeNoteModal;
 $('noteModal').onclick = (e) => { if (e.target.id === 'noteModal') closeNoteModal(); };
+
+document.querySelectorAll('.emoji-option').forEach(opt => {
+  opt.onclick = () => {
+    currentEmoji = opt.dataset.emoji || '';
+    document.querySelectorAll('.emoji-option').forEach(o => o.classList.toggle('selected', o === opt));
+  };
+});
 
 let pendingImageFile = null;
 
@@ -1056,6 +1490,7 @@ $('noteSave').onclick = async () => {
         text,
         image: imageUrl,
         imagePath: imagePath,
+        emoji: currentEmoji || null,
         reminder: ctx.type === 'priority' ? reminder : null
       };
       if (ctx.type === 'priority' && reminder !== ctx.edit.reminder) {
@@ -1068,6 +1503,7 @@ $('noteSave').onclick = async () => {
         text,
         image: imageUrl,
         imagePath: imagePath,
+        emoji: currentEmoji || null,
         done: false,
         author: currentAlias,
         authorEmail: currentUser.email,
@@ -1124,6 +1560,7 @@ function switchView(name) {
   if (name === 'Calendar') renderCalendar();
   if (name === 'Chat') renderChat();
   if (name === 'Reminders') renderReminders();
+  if (name === 'Settings') renderSpecialDates();
 }
 
 document.querySelectorAll('.tab-btn').forEach(btn => { btn.onclick = () => switchView(btn.dataset.view); });
@@ -1195,24 +1632,104 @@ function renderChat() {
     return;
   }
   state.chat.forEach(m => {
-    const div = document.createElement('div');
     const isMe = m.authorEmail === currentUser?.email;
-    div.className = 'msg ' + (isMe ? 'me' : 'them');
+    const isSticker = m.type === 'sticker';
+
+    const wrapper = document.createElement('div');
+    wrapper.className = 'msg-wrapper ' + (isMe ? 'me' : 'them');
+
+    const msg = document.createElement('div');
+    msg.className = 'msg ' + (isMe ? 'me' : 'them') + (isSticker ? ' sticker-msg' : '');
     const ts = m.ts?.toDate ? m.ts.toDate() : new Date(m.ts || Date.now());
-    div.innerHTML = `
-      <div>${escapeHtml(m.text)}</div>
+    const textHtml = isSticker ? m.text : escapeHtml(m.text);
+    msg.innerHTML = `
+      <div>${textHtml}</div>
       <div class="msg-meta">@${escapeHtml(m.author || '')} · ${ts.toLocaleString('es-MX', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'})}</div>
     `;
-    c.appendChild(div);
+
+    msg.addEventListener('dblclick', (e) => {
+      e.preventDefault();
+      document.querySelectorAll('.msg-wrapper.show-picker').forEach(w => w.classList.remove('show-picker'));
+      wrapper.classList.add('show-picker');
+    });
+    let lp = null;
+    msg.addEventListener('touchstart', (e) => {
+      lp = setTimeout(() => {
+        document.querySelectorAll('.msg-wrapper.show-picker').forEach(w => w.classList.remove('show-picker'));
+        wrapper.classList.add('show-picker');
+      }, 500);
+    });
+    msg.addEventListener('touchend', () => { if (lp) clearTimeout(lp); });
+    msg.addEventListener('touchmove', () => { if (lp) clearTimeout(lp); });
+
+    wrapper.appendChild(msg);
+
+    const reactions = m.reactions || {};
+    const reactionKeys = Object.keys(reactions).filter(k => Object.keys(reactions[k] || {}).length > 0);
+    if (reactionKeys.length > 0) {
+      const rDiv = document.createElement('div');
+      rDiv.className = 'msg-reactions';
+      reactionKeys.forEach(emoji => {
+        const users = Object.keys(reactions[emoji]);
+        const mine = users.includes(currentUser.email);
+        const span = document.createElement('span');
+        span.className = 'msg-reaction' + (mine ? ' mine' : '');
+        span.innerHTML = `${emoji} <span class="count">${users.length}</span>`;
+        span.onclick = () => toggleReaction(m.id, emoji);
+        rDiv.appendChild(span);
+      });
+      wrapper.appendChild(rDiv);
+    }
+
+    const picker = document.createElement('div');
+    picker.className = 'reaction-picker';
+    REACTIONS.forEach(r => {
+      const btn = document.createElement('button');
+      btn.className = 'reaction-pick-btn';
+      btn.textContent = r;
+      btn.onclick = (e) => {
+        e.stopPropagation();
+        toggleReaction(m.id, r);
+        wrapper.classList.remove('show-picker');
+      };
+      picker.appendChild(btn);
+    });
+    wrapper.appendChild(picker);
+
+    c.appendChild(wrapper);
   });
   c.scrollTop = c.scrollHeight;
 }
+
+async function toggleReaction(msgId, emoji) {
+  if (!currentUser) return;
+  const msg = state.chat.find(m => m.id === msgId);
+  if (!msg) return;
+  const reactions = msg.reactions || {};
+  const users = reactions[emoji] || {};
+  const myKey = currentUser.email.replace(/[.@]/g, '_');
+  const mine = users[myKey];
+  try {
+    if (mine) {
+      await updateDoc(doc(db, 'chat', msgId), { [`reactions.${emoji}.${myKey}`]: deleteField() });
+    } else {
+      await updateDoc(doc(db, 'chat', msgId), { [`reactions.${emoji}.${myKey}`]: true });
+    }
+  } catch (err) { console.error(err); showToast('Error al reaccionar'); }
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.msg-wrapper') && !e.target.closest('.reaction-picker')) {
+    document.querySelectorAll('.msg-wrapper.show-picker').forEach(w => w.classList.remove('show-picker'));
+  }
+});
 
 $('chatSend').onclick = async () => {
   const inp = $('chatInput');
   const t = inp.value.trim();
   if (!t) return;
   inp.value = '';
+  setMyTyping(false);
   try {
     await addDoc(collection(db, 'chat'), {
       text: t,
@@ -1223,7 +1740,61 @@ $('chatSend').onclick = async () => {
   } catch (err) { showToast('Error al enviar'); console.error(err); inp.value = t; }
 };
 
+$('chatInput').addEventListener('input', () => {
+  setMyTyping(true);
+  clearTimeout(typingTimeout);
+  typingTimeout = setTimeout(() => setMyTyping(false), 2500);
+});
+
 $('chatInput').onkeydown = (e) => { if (e.key === 'Enter') $('chatSend').click(); };
+
+function renderStickerPanel() {
+  const p = $('stickerPanel');
+  p.innerHTML = '';
+  for (const cat in STICKER_SETS) {
+    const title = document.createElement('div');
+    title.className = 'sticker-category';
+    title.textContent = cat;
+    p.appendChild(title);
+    const grid = document.createElement('div');
+    grid.className = 'sticker-grid';
+    STICKER_SETS[cat].forEach(emoji => {
+      const item = document.createElement('div');
+      item.className = 'sticker-item';
+      item.textContent = emoji;
+      item.onclick = () => sendSticker(emoji);
+      grid.appendChild(item);
+    });
+    p.appendChild(grid);
+  }
+}
+
+async function sendSticker(emoji) {
+  try {
+    await addDoc(collection(db, 'chat'), {
+      text: emoji,
+      type: 'sticker',
+      author: currentAlias,
+      authorEmail: currentUser.email,
+      ts: serverTimestamp()
+    });
+    $('stickerPanel').classList.remove('show');
+  } catch (err) { showToast('Error'); console.error(err); }
+}
+
+$('stickerToggle').onclick = (e) => {
+  e.stopPropagation();
+  const p = $('stickerPanel');
+  if (!p.innerHTML) renderStickerPanel();
+  p.classList.toggle('show');
+};
+
+document.addEventListener('click', (e) => {
+  const p = $('stickerPanel');
+  if (p.classList.contains('show') && !p.contains(e.target) && e.target.id !== 'stickerToggle') {
+    p.classList.remove('show');
+  }
+});
 
 function renderReminders() {
   const list = $('remindersList');
@@ -1262,8 +1833,83 @@ function checkReminders() {
 
 $('userPill').onclick = () => switchView('Settings');
 
+function updatePrefsUI() {
+  $('toggleSounds').classList.toggle('on', prefs.sounds);
+  $('togglePartnerNotif').classList.toggle('on', prefs.partnerNotif);
+  $('toggleConfetti').classList.toggle('on', prefs.confetti);
+}
+
+$('toggleSounds').onclick = () => {
+  prefs.sounds = !prefs.sounds;
+  localStorage.setItem('pref_sounds', prefs.sounds ? '1' : '0');
+  updatePrefsUI();
+  if (prefs.sounds) { getAudioCtx(); playSound('pop'); }
+};
+$('togglePartnerNotif').onclick = () => {
+  prefs.partnerNotif = !prefs.partnerNotif;
+  localStorage.setItem('pref_partner_notif', prefs.partnerNotif ? '1' : '0');
+  updatePrefsUI();
+  if (prefs.partnerNotif && 'Notification' in window && Notification.permission === 'default') {
+    try { Notification.requestPermission(); } catch(e) {}
+  }
+};
+$('toggleConfetti').onclick = () => {
+  prefs.confetti = !prefs.confetti;
+  localStorage.setItem('pref_confetti', prefs.confetti ? '1' : '0');
+  updatePrefsUI();
+  if (prefs.confetti) {
+    const r = $('toggleConfetti').getBoundingClientRect();
+    spawnConfetti(r.left + r.width/2, r.top + r.height/2);
+  }
+};
+
+function renderSpecialDates() {
+  const list = $('specialDatesList');
+  list.innerHTML = '';
+  const sorted = [...state.specialDates].sort((a,b) => (a.date || '').localeCompare(b.date || ''));
+  if (sorted.length === 0) {
+    list.innerHTML = '<div style="font-size: 12px; color: var(--text-mute); text-align: center; padding: 10px;">Sin fechas especiales aún ♥</div>';
+    return;
+  }
+  sorted.forEach(sd => {
+    const item = document.createElement('div');
+    item.className = 'special-date-item';
+    const [y, m, d] = (sd.date || '').split('-');
+    const dateStr = d && m ? `${d}/${m}/${y?.slice(2) || ''}` : sd.date;
+    item.innerHTML = `
+      <span class="sd-date">${dateStr}</span>
+      <span class="sd-label"></span>
+      <button class="sd-del" title="Quitar">×</button>
+    `;
+    item.querySelector('.sd-label').textContent = sd.label || '';
+    item.querySelector('.sd-del').onclick = async () => {
+      if (!confirm('¿Quitar esta fecha?')) return;
+      try { await deleteDoc(doc(db, 'specialDates', sd.id)); }
+      catch (err) { showToast('Error'); console.error(err); }
+    };
+    list.appendChild(item);
+  });
+}
+
+$('addSpecialDate').onclick = async () => {
+  const date = $('specialDateInput').value;
+  const label = $('specialLabelInput').value.trim();
+  if (!date) { showToast('Elige una fecha'); return; }
+  if (!label) { showToast('Pon una etiqueta'); return; }
+  try {
+    await addDoc(collection(db, 'specialDates'), {
+      date, label, createdBy: currentAlias, createdAt: serverTimestamp()
+    });
+    $('specialDateInput').value = '';
+    $('specialLabelInput').value = '';
+  } catch (err) { showToast('Error al guardar'); console.error(err); }
+};
+
 function spawnPetals() {
   const bg = $('sakuraBg');
+  bg.innerHTML = '';
+  const todayKey = nowCDMX().dateKey;
+  const isTodaySpecial = state.specialDates?.some(sd => sd.date === todayKey);
   const n = window.innerWidth < 800 ? 7 : 14;
   for (let i = 0; i < n; i++) {
     const p = document.createElement('div');
@@ -1274,6 +1920,19 @@ function spawnPetals() {
     const scale = 0.7 + Math.random() * 0.7;
     p.innerHTML = `<svg viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;transform:scale(${scale})"><path d="M10 0 C 4 8, 4 20, 10 30 C 16 20, 16 8, 10 0 Z" fill="#FFB6C9"/></svg>`;
     bg.appendChild(p);
+  }
+  if (isTodaySpecial) {
+    const goldN = 6;
+    for (let i = 0; i < goldN; i++) {
+      const p = document.createElement('div');
+      p.className = 'petal';
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.animationDuration = (14 + Math.random() * 10) + 's';
+      p.style.animationDelay = (Math.random() * 14) + 's';
+      const scale = 0.6 + Math.random() * 0.7;
+      p.innerHTML = `<svg viewBox="0 0 20 30" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;transform:scale(${scale})"><path d="M10 0 L 12 8 L 20 10 L 13 16 L 16 26 L 10 21 L 4 26 L 7 16 L 0 10 L 8 8 Z" fill="#F2C94C"/></svg>`;
+      bg.appendChild(p);
+    }
   }
 }
 
