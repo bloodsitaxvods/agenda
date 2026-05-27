@@ -208,11 +208,34 @@ body {
   box-shadow: 0 4px 14px rgba(232, 114, 155, 0.07); overflow: hidden;
 }
 
-.day-card.today { border-color: var(--pink); box-shadow: 0 6px 22px rgba(232, 114, 155, 0.25); animation: pulse-glow 3s ease-in-out infinite; }
+.day-card.today {
+  border: 2px solid var(--pink);
+  box-shadow: 0 8px 30px rgba(232, 114, 155, 0.45), 0 0 0 3px rgba(255, 182, 201, 0.35);
+  animation: pulse-glow 2.5s ease-in-out infinite;
+  transform: translateY(-1px);
+  position: relative;
+}
+
+.day-card.today::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, var(--pink), var(--pink-soft), var(--pink));
+  background-size: 200% 200%;
+  z-index: -1;
+  opacity: 0.4;
+  animation: shimmer 3s ease infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
 
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 6px 18px rgba(232, 114, 155, 0.2); }
-  50% { box-shadow: 0 8px 28px rgba(232, 114, 155, 0.4); }
+  0%, 100% { box-shadow: 0 8px 24px rgba(232, 114, 155, 0.4), 0 0 0 3px rgba(255, 182, 201, 0.3); }
+  50% { box-shadow: 0 12px 40px rgba(232, 114, 155, 0.6), 0 0 0 5px rgba(255, 182, 201, 0.5); }
 }
 
 .day-card .day-header {
@@ -221,10 +244,10 @@ body {
 }
 
 .day-name { font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; font-size: 11px; color: var(--text); }
-.day-card.today .day-name { color: var(--pink-deep); }
-.day-card.today .day-header { background: linear-gradient(180deg, var(--pink-soft), var(--pink-pastel)); }
+.day-card.today .day-name { color: #fff; font-weight: 800; text-shadow: 0 1px 2px rgba(180, 60, 100, 0.3); }
+.day-card.today .day-header { background: linear-gradient(135deg, var(--pink), var(--pink-soft)); }
 .day-num { font-family: 'Fredoka'; font-weight: 600; font-size: 14px; color: var(--text); }
-.day-card.today .day-num { color: var(--pink-deep); }
+.day-card.today .day-num { color: #fff; font-weight: 700; text-shadow: 0 1px 2px rgba(180, 60, 100, 0.3); }
 
 .day-card-body { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 10px 12px 14px; min-height: 0; }
 
@@ -260,6 +283,8 @@ body {
 .note-item.done .note-text { color: var(--done); text-decoration: line-through; }
 .note-meta { font-size: 9px; color: var(--text-mute); margin-top: 3px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .note-author { color: var(--pink-deep); font-weight: 700; }
+.note-time { color: var(--text-mute); opacity: 0.8; font-weight: 500; }
+.note-reminder { color: var(--pink-deep); font-weight: 600; }
 
 .note-thumb { width: 100%; max-height: 80px; object-fit: cover; border-radius: 6px; margin-top: 4px; cursor: pointer; border: 1px solid var(--border-soft); }
 
@@ -386,15 +411,18 @@ input[type="file"] { display: none; }
   .app { grid-template-columns: 1fr; }
   .sidebar {
     position: fixed; bottom: 0; left: 0; right: 0; top: auto; height: auto; width: 100%;
-    flex-direction: row; padding: 10px 6px;
+    flex-direction: row; padding: 12px 8px calc(12px + env(safe-area-inset-bottom, 0px));
     border-right: none; border-top: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 -4px 16px rgba(232, 114, 155, 0.08);
-    z-index: 100; justify-content: space-around; gap: 4px;
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 -4px 20px rgba(232, 114, 155, 0.12);
+    z-index: 100; justify-content: space-around; gap: 6px;
   }
   .sidebar-logo { display: none; }
   .tab-spacer { display: none; }
-  .main { padding: 14px 12px 90px; }
+  .tab-btn { width: 54px; height: 54px; border-radius: 16px; }
+  .tab-btn svg { width: 26px; height: 26px; }
+  .tab-btn .badge { top: 4px; right: 4px; font-size: 10px; min-width: 18px; height: 18px; }
+  .main { padding: 14px 12px 110px; }
   .date-display { padding: 12px 16px; gap: 12px; width: 100%; }
   .date-num { font-size: 42px; min-width: 50px; }
   .date-weekday { font-size: 14px; letter-spacing: 1.5px; }
@@ -403,46 +431,9 @@ input[type="file"] { display: none; }
   .header-actions { width: 100%; justify-content: flex-end; }
 
   .week-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     grid-template-rows: auto;
     gap: 10px;
-  }
-  .day-1 { grid-column: 1; grid-row: 1; }
-  .day-2 { grid-column: 2; grid-row: 1; }
-  .day-3 { grid-column: 3; grid-row: 1; }
-  .day-4 { grid-column: 1; grid-row: 2; }
-  .day-5 { grid-column: 2; grid-row: 2; }
-  .day-6 { grid-column: 3; grid-row: 2; }
-  .day-7 { grid-column: 1; grid-row: 3; }
-  .priorities-panel {
-    grid-column: 1 / -1 !important;
-    grid-row: 4 !important;
-    align-self: stretch;
-    max-height: none;
-  }
-  .day-card { min-height: 160px; }
-  .day-card .day-header { padding: 6px 10px; }
-  .day-name { font-size: 10px; letter-spacing: 1px; }
-  .day-num { font-size: 13px; }
-  .day-card-body { padding: 8px 8px 12px; }
-  .note-item { padding: 6px 8px; font-size: 11.5px; }
-  .note-text { font-size: 11.5px; line-height: 1.4; }
-  .add-note-btn { font-size: 10px; padding: 5px; }
-  .day-heart { font-size: 12px; bottom: 6px; right: 10px; }
-
-  .week-label { min-width: auto; font-size: 12px; padding: 0 6px; }
-}
-
-@media (max-width: 640px) {
-  .main { padding: 12px 10px 90px; gap: 12px; }
-  .date-display { padding: 10px 14px; gap: 10px; }
-  .date-num { font-size: 36px; min-width: 44px; }
-  .date-weekday { font-size: 13px; }
-  .date-time { font-size: 16px; padding-left: 10px; margin-left: 4px; }
-
-  .week-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
   }
   .day-1 { grid-column: 1; grid-row: 1; }
   .day-2 { grid-column: 2; grid-row: 1; }
@@ -450,12 +441,21 @@ input[type="file"] { display: none; }
   .day-4 { grid-column: 2; grid-row: 2; }
   .day-5 { grid-column: 1; grid-row: 3; }
   .day-6 { grid-column: 2; grid-row: 3; }
-  .day-7 { grid-column: 1 / -1; grid-row: 4; min-height: 130px; }
+  .day-7 { grid-column: 1 / -1; grid-row: 4; min-height: 140px; }
   .priorities-panel {
+    grid-column: 1 / -1 !important;
     grid-row: 5 !important;
+    align-self: stretch;
+    max-height: none;
   }
-  .day-card { min-height: 140px; }
-  .note-item { padding: 6px 7px; }
+  .day-card { min-height: 170px; }
+  .day-card .day-header { padding: 8px 12px; }
+  .day-name { font-size: 11px; letter-spacing: 1.2px; }
+  .day-num { font-size: 14px; }
+  .day-card-body { padding: 9px 10px 14px; }
+  .day-heart { font-size: 13px; bottom: 6px; right: 10px; }
+
+  .week-label { min-width: auto; font-size: 12px; padding: 0 6px; }
 }
 </style>
 </head>
@@ -913,8 +913,22 @@ function renderWeek() {
 function renderNote(note) {
   const div = document.createElement('div');
   div.className = 'note-item' + (note.done ? ' done' : '');
+
+  let timeHtml = '';
+  if (note.createdAt?.toDate) {
+    const d = note.createdAt.toDate();
+    if (note.type === 'priority') {
+      const dateStr = d.toLocaleDateString('es-MX', { day: '2-digit', month: '2-digit' });
+      const timeStr = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
+      timeHtml = `<span class="note-time">${dateStr} · ${timeStr}</span>`;
+    } else {
+      const timeStr = d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false });
+      timeHtml = `<span class="note-time">${timeStr}</span>`;
+    }
+  }
+
   const reminderHtml = note.reminder
-    ? `<span>⏰ ${new Date(note.reminder).toLocaleString('es-MX', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'})}</span>`
+    ? `<span class="note-reminder">⏰ ${new Date(note.reminder).toLocaleString('es-MX', {hour:'2-digit', minute:'2-digit', day:'2-digit', month:'2-digit'})}</span>`
     : '';
   const authorHtml = note.author ? `<span class="note-author">@${escapeHtml(note.author)}</span>` : '';
   const imgHtml = note.image ? `<img class="note-thumb" src="${note.image}" alt="">` : '';
@@ -924,7 +938,7 @@ function renderNote(note) {
     <div class="note-content">
       <div class="note-text"></div>
       ${imgHtml}
-      <div class="note-meta">${authorHtml}${reminderHtml}</div>
+      <div class="note-meta">${authorHtml}${timeHtml}${reminderHtml}</div>
     </div>
     <button class="del-btn" title="Eliminar">×</button>
   `;
