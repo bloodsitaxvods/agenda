@@ -3,8 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#FDF8FA">
+<meta name="theme-color" content="#E8729B">
 <title>Agenda</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Agenda">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1946,6 +1953,49 @@ document.addEventListener('keydown', (e) => {
     if (!$('imgViewer').classList.contains('hidden')) hide($('imgViewer'));
   }
 });
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed:', err));
+  });
+}
+
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  setTimeout(showInstallToast, 4000);
+});
+
+function showInstallToast() {
+  if (!deferredInstallPrompt || localStorage.getItem('install_dismissed') === '1') return;
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.style.cursor = 'pointer';
+  t.style.bottom = '120px';
+  t.style.display = 'flex';
+  t.style.alignItems = 'center';
+  t.style.gap = '10px';
+  t.innerHTML = `<span>📱 Instalar como app</span><button class="btn btn-primary" style="padding: 4px 12px; font-size: 11px;">Instalar</button><span style="opacity:0.5; padding: 0 4px;">×</span>`;
+  const installBtn = t.querySelector('.btn-primary');
+  const closeBtn = t.querySelector('span:last-child');
+  installBtn.onclick = async (e) => {
+    e.stopPropagation();
+    try {
+      deferredInstallPrompt.prompt();
+      const { outcome } = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+    } catch(err) {}
+    t.remove();
+  };
+  closeBtn.onclick = (e) => {
+    e.stopPropagation();
+    localStorage.setItem('install_dismissed', '1');
+    t.remove();
+  };
+  document.body.appendChild(t);
+  setTimeout(() => { if (t.parentNode) t.remove(); }, 12000);
+}
 </script>
 </body>
 </html>
