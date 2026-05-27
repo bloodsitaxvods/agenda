@@ -832,6 +832,13 @@ input[type="file"] { display: none; }
         </div>
 
         <div class="settings-section">
+          <div class="settings-section-title">App</div>
+          <div style="font-size: 12px; color: var(--text-mute); line-height: 1.5; margin-bottom: 10px;">Instala la agenda como app real en tu dispositivo. Aparece con su propio ícono en tu pantalla de inicio, sin barra del navegador.</div>
+          <button class="btn btn-primary" id="installAppBtn">📱 Instalar como app</button>
+          <div id="installStatus" style="font-size: 12px; color: var(--text-mute); margin-top: 10px;"></div>
+        </div>
+
+        <div class="settings-section">
           <div class="settings-section-title">Widget</div>
           <div style="font-size: 12px; color: var(--text-mute); line-height: 1.5; margin-bottom: 10px;">Vista mínima con solo el día de hoy y prioridades pendientes. Útil para OBS o ventana flotante.</div>
           <a href="?widget=1" target="_blank" class="btn">📺 Abrir widget en ventana nueva</a>
@@ -839,6 +846,10 @@ input[type="file"] { display: none; }
 
         <div class="settings-section" style="font-size: 12px; color: var(--text-mute); line-height: 1.5;">
           Todos los apuntes se guardan en la nube y se sincronizan automáticamente entre los dispositivos autorizados. Las imágenes se almacenan en Firebase Storage.
+          <div style="margin-top: 12px; font-size: 11px;">
+            Versión <span id="appVersion" style="color: var(--pink-deep); font-weight: 700;">v1</span>
+            <button class="btn" id="checkUpdateBtn" style="padding: 4px 10px; font-size: 11px; margin-left: 8px;">Buscar actualizaciones</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1954,48 +1965,165 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
+const APP_VERSION = 'v1';
+let swRegistration = null;
+let waitingWorker = null;
+
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(err => console.warn('SW registration failed:', err));
+  window.addEventListener('load', async () => {
+    try {
+      swRegistration = await navigator.serviceWorker.register('sw.js');
+
+      if (swRegistration.waiting) {
+        waitingWorker = swRegistration.waiting;
+        showUpdateToast();
+      }
+
+      swRegistration.addEventListener('updatefound', () => {
+        const newSW = swRegistration.installing;
+        if (!newSW) return;
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            waitingWorker = newSW;
+            showUpdateToast();
+          }
+        });
+      });
+
+      let reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloading) return;
+        reloading = true;
+        location.reload();
+      });
+
+      setInterval(() => {
+        if (swRegistration) swRegistration.update().catch(()=>{});
+      }, 30 * 60 * 1000);
+    } catch (err) {
+      console.warn('SW registration failed:', err);
+    }
   });
 }
 
-let deferredInstallPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredInstallPrompt = e;
-  setTimeout(showInstallToast, 4000);
-});
-
-function showInstallToast() {
-  if (!deferredInstallPrompt || localStorage.getItem('install_dismissed') === '1') return;
+function showUpdateToast() {
+  if (document.getElementById('updateToast')) return;
   const t = document.createElement('div');
+  t.id = 'updateToast';
   t.className = 'toast';
-  t.style.cursor = 'pointer';
   t.style.bottom = '120px';
   t.style.display = 'flex';
   t.style.alignItems = 'center';
   t.style.gap = '10px';
-  t.innerHTML = `<span>📱 Instalar como app</span><button class="btn btn-primary" style="padding: 4px 12px; font-size: 11px;">Instalar</button><span style="opacity:0.5; padding: 0 4px;">×</span>`;
-  const installBtn = t.querySelector('.btn-primary');
-  const closeBtn = t.querySelector('span:last-child');
-  installBtn.onclick = async (e) => {
-    e.stopPropagation();
-    try {
-      deferredInstallPrompt.prompt();
-      const { outcome } = await deferredInstallPrompt.userChoice;
-      deferredInstallPrompt = null;
-    } catch(err) {}
-    t.remove();
-  };
-  closeBtn.onclick = (e) => {
-    e.stopPropagation();
-    localStorage.setItem('install_dismissed', '1');
+  t.style.cursor = 'pointer';
+  t.innerHTML = `<span>✨ Nueva versión disponible</span><button class="btn btn-primary" style="padding: 4px 12px; font-size: 11px;">Actualizar</button>`;
+  t.querySelector('.btn-primary').onclick = () => {
+    if (waitingWorker) waitingWorker.postMessage({ type: 'SKIP_WAITING' });
     t.remove();
   };
   document.body.appendChild(t);
-  setTimeout(() => { if (t.parentNode) t.remove(); }, 12000);
 }
+
+if (document.getElementById('appVersion')) {
+  document.getElementById('appVersion').textContent = APP_VERSION;
+}
+
+if (document.getElementById('checkUpdateBtn')) {
+  document.getElementById('checkUpdateBtn').onclick = async () => {
+    if (!swRegistration) { showToast('Buscando...'); return; }
+    const btn = document.getElementById('checkUpdateBtn');
+    btn.disabled = true;
+    btn.textContent = 'Buscando...';
+    try {
+      await swRegistration.update();
+      setTimeout(() => {
+        if (waitingWorker) {
+          showToast('Nueva versión encontrada ♥');
+        } else {
+          showToast('Ya tienes la versión más reciente');
+        }
+        btn.disabled = false;
+        btn.textContent = 'Buscar actualizaciones';
+      }, 1500);
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Buscar actualizaciones';
+      showToast('Error al buscar');
+    }
+  };
+}
+
+let deferredInstallPrompt = null;
+
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+         window.navigator.standalone === true;
+}
+
+function isIOS() {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
+function updateInstallButton() {
+  const btn = $('installAppBtn');
+  const status = $('installStatus');
+  if (!btn) return;
+
+  if (isStandalone()) {
+    btn.disabled = true;
+    btn.textContent = '✓ Ya está instalada';
+    status.textContent = 'Estás usando la app instalada.';
+    return;
+  }
+
+  if (deferredInstallPrompt) {
+    btn.disabled = false;
+    btn.textContent = '📱 Instalar como app';
+    status.textContent = '';
+    return;
+  }
+
+  if (isIOS()) {
+    btn.disabled = true;
+    btn.textContent = '📱 Cómo instalar en iPhone';
+    status.innerHTML = 'En iPhone abre esta página en <b>Safari</b>, toca el botón Compartir (cuadrado con flecha) y elige <b>"Agregar a pantalla de inicio"</b>.';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '📱 Instalación no disponible aquí';
+  status.innerHTML = 'Tu navegador todavía no permite instalar la app o ya la rechazaste antes. Prueba con <b>Chrome</b> o <b>Edge</b>, o desde el menú del navegador busca <b>"Instalar aplicación"</b>.';
+}
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  updateInstallButton();
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  updateInstallButton();
+  showToast('¡App instalada! ♥');
+});
+
+$('installAppBtn').onclick = async () => {
+  if (!deferredInstallPrompt) return;
+  try {
+    deferredInstallPrompt.prompt();
+    const { outcome } = await deferredInstallPrompt.userChoice;
+    if (outcome === 'accepted') {
+      showToast('Instalando...');
+    }
+    deferredInstallPrompt = null;
+    updateInstallButton();
+  } catch(err) {
+    console.error(err);
+    showToast('No se pudo iniciar la instalación');
+  }
+};
+
+setTimeout(updateInstallButton, 500);
 </script>
 </body>
 </html>
